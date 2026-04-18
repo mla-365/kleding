@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fashion Fair-Share Calculator</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --accent: #27ae60;
+            --bg: #f4f7f6;
+            --card: #ffffff;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg);
+            color: var(--primary);
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: var(--card);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        header {
+            text-align: center;
+            border-bottom: 2px solid var(--bg);
+            margin-bottom: 30px;
+            padding-bottom: 10px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+        }
+
+        @media (max-width: 768px) {
+            .grid { grid-template-columns: 1fr; }
+        }
+
+        .input-section h3 {
+            border-left: 4px solid var(--accent);
+            padding-left: 10px;
+            margin-bottom: 20px;
+        }
+
+        .slider-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            font-weight: bold;
+            font-size: 0.9em;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            cursor: pointer;
+        }
+
+        .value-display {
+            float: right;
+            color: var(--accent);
+            font-weight: bold;
+        }
+
+        .bonus-section {
+            background: #e8f6ef;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+
+        .total-box {
+            font-size: 1.2em;
+            font-weight: bold;
+            text-align: center;
+            padding: 15px;
+            background: var(--primary);
+            color: white;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+
+        .warning {
+            color: #e74c3c;
+            font-size: 0.85em;
+            font-weight: bold;
+            height: 20px;
+        }
+
+        canvas {
+            max-width: 100%;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>Fashion Fair-Share Calculator</h1>
+        <p>Economie Project: Herverdeel de meerwaarde in de kledingketen</p>
+    </header>
+
+    <div class="grid">
+        <div class="input-section">
+            <h3>1. De Basisverdeling (€100)</h3>
+            <p><small>Verdeel de 100 euro over de keten. Let op de limiet!</small></p>
+            
+            <div id="sliders">
+                </div>
+
+            <div id="limit-warning" class="warning"></div>
+
+            <div class="bonus-section">
+                <h3>2. De Ethische Bonus (+€20)</h3>
+                <p><small>Verdeel de extra bijdrage van de consument over deze doelen:</small></p>
+                <div id="bonus-sliders">
+                    </div>
+            </div>
+
+            <div class="total-box" id="final-price">
+                Totale Verkoopprijs: €100
+            </div>
+        </div>
+
+        <div class="chart-section">
+            <h3>Visualisatie van de Waarde</h3>
+            <canvas id="distributionChart"></canvas>
+            
+            <div style="margin-top: 30px;">
+                <h4>Impact Analyse</h4>
+                <p id="impact-text">Schuif aan de knoppen om te zien hoe de verdeling verandert.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const stakeholders = [
+        { id: 'boer', name: 'Grondstof (Katoenboer)', start: 5, color: '#f1c40f' },
+        { id: 'fabriek', name: 'Productie (Lonen/Fabriek)', start: 4, color: '#e67e22' },
+        { id: 'logistiek', name: 'Transport & Logistiek', start: 10, color: '#95a5a6' },
+        { id: 'merk', name: 'Merk (Marketing/Design)', start: 35, color: '#3498db' },
+        { id: 'winkel', name: 'Retail (Winkel/Winst)', start: 25, color: '#9b59b6' },
+        { id: 'btw', name: 'Overheid (BTW 21%)', start: 21, color: '#34495e' }
+    ];
+
+    const bonusGoals = [
+        { id: 'eco', name: 'Ecologische voetafdruk', color: '#27ae60' },
+        { id: 'sociaal', name: 'Sociale wetgeving/Zekerheid', color: '#16a085' },
+        { id: 'kind', name: 'Preventie Kinderarbeid', color: '#2ecc71' }
+    ];
+
+    let myChart;
+
+    function init() {
+        const sliderContainer = document.getElementById('sliders');
+        stakeholders.forEach(s => {
+            sliderContainer.innerHTML += `
+                <div class="slider-group">
+                    <label>${s.name} <span class="value-display">€<span id="val-${s.id}">${s.start}</span></span></label>
+                    <input type="range" id="input-${s.id}" min="0" max="100" value="${s.start}" oninput="update()">
+                </div>
+            `;
+        });
+
+        const bonusContainer = document.getElementById('bonus-sliders');
+        bonusGoals.forEach(b => {
+            bonusContainer.innerHTML += `
+                <div class="slider-group">
+                    <label>${b.name} <span class="value-display">€<span id="val-${b.id}">0</span></span></label>
+                    <input type="range" id="input-${b.id}" min="0" max="20" value="0" oninput="update()">
+                </div>
+            `;
+        });
+
+        renderChart();
+    }
+
+    function update() {
+        let totalBasis = 0;
+        stakeholders.forEach(s => {
+            let val = parseFloat(document.getElementById(`input-${s.id}`).value);
+            totalBasis += val;
+            document.getElementById(`val-${s.id}`).innerText = val;
+        });
+
+        let totalBonus = 0;
+        bonusGoals.forEach(b => {
+            let val = parseFloat(document.getElementById(`input-${b.id}`).value);
+            totalBonus += val;
+            document.getElementById(`val-${b.id}`).innerText = val;
+        });
+
+        // Check limieten
+        const warning = document.getElementById('limit-warning');
+        if (totalBasis > 100) {
+            warning.innerText = "WAARSCHUWING: Basisbudget overschrijdt €100!";
+        } else if (totalBasis < 100) {
+            warning.innerText = "Let op: Je hebt nog €" + (100 - totalBasis) + " te verdelen.";
+        } else {
+            warning.innerText = "";
+        }
+
+        if (totalBonus > 20) {
+            document.getElementById('final-price').style.background = "#e74c3c";
+            document.getElementById('final-price').innerText = "Bonusbudget te hoog! (max €20)";
+        } else {
+            document.getElementById('final-price').style.background = "#2c3e50";
+            document.getElementById('final-price').innerText = "Totale Verkoopprijs: €" + (totalBasis + totalBonus);
+        }
+
+        updateChart(totalBasis, totalBonus);
+    }
+
+    function renderChart() {
+        const ctx = document.getElementById('distributionChart').getContext('2d');
+        myChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: stakeholders.map(s => s.name).concat(bonusGoals.map(b => b.name)),
+                datasets: [{
+                    label: 'Euro per product',
+                    data: stakeholders.map(s => s.start).concat(bonusGoals.map(b => 0)),
+                    backgroundColor: stakeholders.map(s => s.color).concat(bonusGoals.map(b => b.color))
+                }]
+            },
+            options: {
+                scales: { y: { beginAtZero: true, max: 60 } }
+            }
+        });
+    }
+
+    function updateChart() {
+        const newData = stakeholders.map(s => parseFloat(document.getElementById(`input-${s.id}`).value))
+                        .concat(bonusGoals.map(b => parseFloat(document.getElementById(`input-${b.id}`).value)));
+        myChart.data.datasets[0].data = newData;
+        myChart.update();
+    }
+
+    init();
+</script>
+
+</body>
+</html>
