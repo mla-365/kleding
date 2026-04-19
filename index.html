@@ -14,40 +14,46 @@
         }
 
         body {
-            font-family: 'Helvetica Neue', Arial, sans-serif;
+            font-family: 'Segoe UI', Arial, sans-serif;
             background-color: var(--bg);
             margin: 0;
-            padding: 20px;
+            padding: 10px;
             color: var(--primary);
         }
 
         .container {
-            max-width: 1200px;
+            max-width: 1300px;
             margin: 0 auto;
             background: var(--white);
-            padding: 25px;
+            padding: 20px;
             border-radius: 15px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.1);
         }
 
         header {
             text-align: center;
-            margin-bottom: 30px;
-            border-bottom: 3px solid var(--accent);
-            padding-bottom: 10px;
+            margin-bottom: 15px;
+        }
+
+        /* Banner afbeelding */
+        .chain-image {
+            width: 100%;
+            height: auto;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #ddd;
         }
 
         .main-layout {
             display: grid;
             grid-template-columns: 450px 1fr;
-            gap: 30px;
+            gap: 25px;
         }
 
-        /* Tabs styling */
         .tabs {
             display: flex;
             gap: 5px;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
         }
 
         .tab-btn {
@@ -70,23 +76,19 @@
         .tab-content {
             display: none;
             background: #fdfdfd;
-            padding: 20px;
+            padding: 15px;
             border: 1px solid #dfe6e9;
             border-radius: 0 0 8px 8px;
         }
 
-        .tab-content.active {
-            display: block;
-        }
+        .tab-content.active { display: block; }
 
-        .slider-group {
-            margin-bottom: 18px;
-        }
+        .slider-group { margin-bottom: 15px; }
 
         label {
             display: block;
             margin-bottom: 5px;
-            font-size: 0.9em;
+            font-size: 0.85em;
             font-weight: 600;
         }
 
@@ -98,14 +100,16 @@
         .val-tag {
             float: right;
             color: var(--accent);
+            font-weight: bold;
         }
 
         .status-box {
-            margin-top: 15px;
+            margin-top: 10px;
             padding: 10px;
             text-align: center;
             border-radius: 5px;
             font-weight: bold;
+            font-size: 0.9em;
         }
 
         .ok { background: #dfe6e9; color: var(--primary); }
@@ -113,12 +117,17 @@
 
         .chart-container {
             position: sticky;
-            top: 20px;
-            height: 500px;
+            top: 10px;
+            height: 550px;
+            padding: 10px;
+            background: #fff;
+            border: 1px solid #eee;
+            border-radius: 8px;
         }
 
-        @media (max-width: 900px) {
+        @media (max-width: 1000px) {
             .main-layout { grid-template-columns: 1fr; }
+            .chart-container { position: relative; height: 400px; }
         }
     </style>
 </head>
@@ -128,6 +137,8 @@
     <header>
         <h1>De reis van je kleding: De onzichtbare keten van Fast Fashion</h1>
     </header>
+
+    <img src="https://raw.githubusercontent.com/mla-365/kleding/main/image_52efa4.jpg" alt="De reis van je kleding keten" class="chain-image">
 
     <div class="main-layout">
         <div class="controls">
@@ -139,18 +150,18 @@
 
             <div id="tab1" class="tab-content active">
                 <p><small>Verdeel de €50 op basis van jullie Mentimeter resultaten.</small></p>
-                <div id="sliders-inschattng"></div>
+                <div id="sliders-inschatting"></div>
                 <div id="status-1" class="status-box ok">Totaal: €0 / €50</div>
             </div>
 
             <div id="tab2" class="tab-content">
-                <p><small>Dit is de gemiddelde verdeling in de huidige fast-fashion industrie (€50).</small></p>
+                <p><strong>Gemiddelde verdeling in de huidige fast-fashion industrie (€50)</strong></p>
                 <div id="sliders-werkelijkheid"></div>
                 <div id="status-2" class="status-box ok">Vastgesteld op €50</div>
             </div>
 
             <div id="tab3" class="tab-content">
-                <p><small>Verdeel de extra €10 consumentenbijdrage over de keten.</small></p>
+                <p><small>Verdeel de extra €10 aan welke onderdelen jullie dit zouden besteden.</small></p>
                 <div id="sliders-bonus"></div>
                 <div id="status-3" class="status-box ok">Extra te verdelen: €10</div>
             </div>
@@ -163,34 +174,24 @@
 </div>
 
 <script>
-    const labels = [
-        '1. Grondstoffen', 
-        '2. Productie', 
-        '3. Confectie', 
-        '4. Merk & Design', 
-        '5. Logistiek & Distr.', 
-        '6. De Laatste Mijl'
-    ];
-
-    // Data objecten
+    const labels = ['1. Grondstoffen', '2. Productie', '3. Confectie', '4. Merk & Design', '5. Logistiek & Distr.', '6. De Laatste Mijl'];
+    
     let dataInschatting = [0, 0, 0, 0, 0, 0];
-    const dataWerkelijkheid = [3, 4, 6, 18, 9, 10]; // Realistische schatting op €50
+    const dataWerkelijkheid = [3, 4, 6, 18, 9, 10]; 
     let dataBonus = [0, 0, 0, 0, 0, 0];
+    let showReality = false;
 
     let chart;
 
     function init() {
-        const container1 = document.getElementById('sliders-inschattng');
-        const container2 = document.getElementById('sliders-werkelijkheid');
-        const container3 = document.getElementById('sliders-bonus');
+        const c1 = document.getElementById('sliders-inschatting');
+        const c2 = document.getElementById('sliders-werkelijkheid');
+        const c3 = document.getElementById('sliders-bonus');
 
         labels.forEach((label, i) => {
-            // Sliders voor Inschatting
-            container1.innerHTML += createSliderHtml('inschatting', i, label, 0, 50);
-            // Sliders voor Werkelijkheid (readonly/disabled voor de klas)
-            container2.innerHTML += createSliderHtml('werkelijkheid', i, label, dataWerkelijkheid[i], 50, true);
-            // Sliders voor Bonus
-            container3.innerHTML += createSliderHtml('bonus', i, label, 0, 10);
+            c1.innerHTML += createSliderHtml('inschatting', i, label, 0, 50);
+            c2.innerHTML += createSliderHtml('werkelijkheid', i, label, dataWerkelijkheid[i], 50, true);
+            c3.innerHTML += createSliderHtml('bonus', i, label, 0, 10);
         });
 
         renderChart();
@@ -209,15 +210,20 @@
     function openTab(evt, tabName) {
         let contents = document.getElementsByClassName("tab-content");
         for (let i = 0; i < contents.length; i++) contents[i].style.display = "none";
+        
         let buttons = document.getElementsByClassName("tab-btn");
         for (let i = 0; i < buttons.length; i++) buttons[i].className = buttons[i].className.replace(" active", "");
+        
         document.getElementById(tabName).style.display = "block";
         evt.currentTarget.className += " active";
+
+        // De logica voor het tonen van de grijze balkjes
+        showReality = (tabName === 'tab2' || tabName === 'tab3');
+        updateValues();
     }
 
     function updateValues() {
-        let total1 = 0;
-        let total3 = 0;
+        let total1 = 0, total3 = 0;
 
         labels.forEach((_, i) => {
             let v1 = parseFloat(document.getElementById(`input-inschatting-${i}`).value);
@@ -231,17 +237,18 @@
             total3 += v3;
         });
 
-        // Status updates
-        const s1 = document.getElementById('status-1');
-        s1.innerText = `Totaal: €${total1.toFixed(2)} / €50`;
-        s1.className = (total1 > 50) ? "status-box error" : "status-box ok";
+        document.getElementById('status-1').innerText = `Totaal: €${total1.toFixed(2)} / €50`;
+        document.getElementById('status-1').className = (total1 > 50) ? "status-box error" : "status-box ok";
 
-        const s3 = document.getElementById('status-3');
-        s3.innerText = `Extra verdeeld: €${total3.toFixed(2)} / €10`;
-        s3.className = (total3 > 10) ? "status-box error" : "status-box ok";
+        document.getElementById('status-3').innerText = `Extra verdeeld: €${total3.toFixed(2)} / €10`;
+        document.getElementById('status-3').className = (total3 > 10) ? "status-box error" : "status-box ok";
 
         chart.data.datasets[0].data = dataInschatting;
         chart.data.datasets[2].data = dataBonus;
+        
+        // Alleen tonen als op tab 2 of 3 geklikt is
+        chart.data.datasets[1].data = showReality ? dataWerkelijkheid : [0,0,0,0,0,0];
+        
         chart.update();
     }
 
@@ -252,40 +259,21 @@
             data: {
                 labels: labels,
                 datasets: [
-                    {
-                        label: 'Jullie Inschatting (€50)',
-                        data: dataInschatting,
-                        backgroundColor: '#3498db'
-                    },
-                    {
-                        label: 'De Werkelijkheid (€50)',
-                        data: dataWerkelijkheid,
-                        backgroundColor: '#95a5a6'
-                    },
-                    {
-                        label: 'Extra Duurzaamheid (€10)',
-                        data: dataBonus,
-                        backgroundColor: '#27ae60'
-                    }
+                    { label: 'Jullie Inschatting (€50)', data: dataInschatting, backgroundColor: '#3498db' },
+                    { label: 'De Werkelijkheid (€50)', data: [0,0,0,0,0,0], backgroundColor: '#bdc3c7' },
+                    { label: 'Extra Duurzaamheid (€10)', data: dataBonus, backgroundColor: '#27ae60' }
                 ]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
                 scales: {
-                    y: { 
-                        beginAtZero: true, 
-                        max: 30,
-                        title: { display: true, text: 'Bedrag in Euro' }
-                    }
+                    y: { beginAtZero: true, max: 30, title: { display: true, text: 'Euro' } }
                 },
-                plugins: {
-                    legend: { position: 'bottom' }
-                }
+                plugins: { legend: { position: 'bottom' } }
             }
         });
     }
-
     init();
 </script>
 
