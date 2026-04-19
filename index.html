@@ -3,105 +3,122 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fashion Fair-Share Calculator</title>
+    <title>De reis van je kleding</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
             --primary: #2c3e50;
-            --accent: #27ae60;
-            --bg: #f4f7f6;
-            --card: #ffffff;
+            --accent: #e67e22;
+            --bg: #f0f2f5;
+            --white: #ffffff;
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Helvetica Neue', Arial, sans-serif;
             background-color: var(--bg);
-            color: var(--primary);
-            line-height: 1.6;
             margin: 0;
             padding: 20px;
+            color: var(--primary);
         }
 
         .container {
-            max-width: 1000px;
+            max-width: 1200px;
             margin: 0 auto;
-            background: var(--card);
-            padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            background: var(--white);
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
         }
 
         header {
             text-align: center;
-            border-bottom: 2px solid var(--bg);
             margin-bottom: 30px;
+            border-bottom: 3px solid var(--accent);
             padding-bottom: 10px;
         }
 
-        .grid {
+        .main-layout {
             display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 40px;
+            grid-template-columns: 450px 1fr;
+            gap: 30px;
         }
 
-        @media (max-width: 768px) {
-            .grid { grid-template-columns: 1fr; }
-        }
-
-        .input-section h3 {
-            border-left: 4px solid var(--accent);
-            padding-left: 10px;
+        /* Tabs styling */
+        .tabs {
+            display: flex;
+            gap: 5px;
             margin-bottom: 20px;
         }
 
+        .tab-btn {
+            flex: 1;
+            padding: 12px 5px;
+            cursor: pointer;
+            border: none;
+            background: #dfe6e9;
+            font-weight: bold;
+            border-radius: 8px 8px 0 0;
+            transition: 0.3s;
+            font-size: 0.85em;
+        }
+
+        .tab-btn.active {
+            background: var(--accent);
+            color: white;
+        }
+
+        .tab-content {
+            display: none;
+            background: #fdfdfd;
+            padding: 20px;
+            border: 1px solid #dfe6e9;
+            border-radius: 0 0 8px 8px;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
         .slider-group {
-            margin-bottom: 15px;
+            margin-bottom: 18px;
         }
 
         label {
             display: block;
-            font-weight: bold;
+            margin-bottom: 5px;
             font-size: 0.9em;
+            font-weight: 600;
         }
 
         input[type="range"] {
             width: 100%;
-            cursor: pointer;
+            accent-color: var(--accent);
         }
 
-        .value-display {
+        .val-tag {
             float: right;
             color: var(--accent);
-            font-weight: bold;
         }
 
-        .bonus-section {
-            background: #e8f6ef;
-            padding: 20px;
-            border-radius: 8px;
-            margin-top: 20px;
-        }
-
-        .total-box {
-            font-size: 1.2em;
-            font-weight: bold;
+        .status-box {
+            margin-top: 15px;
+            padding: 10px;
             text-align: center;
-            padding: 15px;
-            background: var(--primary);
-            color: white;
-            border-radius: 8px;
-            margin-top: 20px;
-        }
-
-        .warning {
-            color: #e74c3c;
-            font-size: 0.85em;
+            border-radius: 5px;
             font-weight: bold;
-            height: 20px;
         }
 
-        canvas {
-            max-width: 100%;
+        .ok { background: #dfe6e9; color: var(--primary); }
+        .error { background: #fab1a0; color: #d63031; }
+
+        .chart-container {
+            position: sticky;
+            top: 20px;
+            height: 500px;
+        }
+
+        @media (max-width: 900px) {
+            .main-layout { grid-template-columns: 1fr; }
         }
     </style>
 </head>
@@ -109,145 +126,164 @@
 
 <div class="container">
     <header>
-        <h1>Fashion Fair-Share Calculator</h1>
-        <p>Economie Project: Herverdeel de meerwaarde in de kledingketen</p>
+        <h1>De reis van je kleding: De onzichtbare keten van Fast Fashion</h1>
     </header>
 
-    <div class="grid">
-        <div class="input-section">
-            <h3>1. De Basisverdeling (€100)</h3>
-            <p><small>Verdeel de 100 euro over de keten. Let op de limiet!</small></p>
-            
-            <div id="sliders">
-                </div>
-
-            <div id="limit-warning" class="warning"></div>
-
-            <div class="bonus-section">
-                <h3>2. De Ethische Bonus (+€20)</h3>
-                <p><small>Verdeel de extra bijdrage van de consument over deze doelen:</small></p>
-                <div id="bonus-sliders">
-                    </div>
+    <div class="main-layout">
+        <div class="controls">
+            <div class="tabs">
+                <button class="tab-btn active" onclick="openTab(event, 'tab1')">1. Jullie Inschatting</button>
+                <button class="tab-btn" onclick="openTab(event, 'tab2')">2. De Werkelijkheid</button>
+                <button class="tab-btn" onclick="openTab(event, 'tab3')">3. Extra €10 Duurzaam</button>
             </div>
 
-            <div class="total-box" id="final-price">
-                Totale Verkoopprijs: €100
+            <div id="tab1" class="tab-content active">
+                <p><small>Verdeel de €50 op basis van jullie Mentimeter resultaten.</small></p>
+                <div id="sliders-inschattng"></div>
+                <div id="status-1" class="status-box ok">Totaal: €0 / €50</div>
+            </div>
+
+            <div id="tab2" class="tab-content">
+                <p><small>Dit is de gemiddelde verdeling in de huidige fast-fashion industrie (€50).</small></p>
+                <div id="sliders-werkelijkheid"></div>
+                <div id="status-2" class="status-box ok">Vastgesteld op €50</div>
+            </div>
+
+            <div id="tab3" class="tab-content">
+                <p><small>Verdeel de extra €10 consumentenbijdrage over de keten.</small></p>
+                <div id="sliders-bonus"></div>
+                <div id="status-3" class="status-box ok">Extra te verdelen: €10</div>
             </div>
         </div>
 
-        <div class="chart-section">
-            <h3>Visualisatie van de Waarde</h3>
-            <canvas id="distributionChart"></canvas>
-            
-            <div style="margin-top: 30px;">
-                <h4>Impact Analyse</h4>
-                <p id="impact-text">Schuif aan de knoppen om te zien hoe de verdeling verandert.</p>
-            </div>
+        <div class="chart-container">
+            <canvas id="mainChart"></canvas>
         </div>
     </div>
 </div>
 
 <script>
-    const stakeholders = [
-        { id: 'boer', name: 'Grondstof (Katoenboer)', start: 5, color: '#f1c40f' },
-        { id: 'fabriek', name: 'Productie (Lonen/Fabriek)', start: 4, color: '#e67e22' },
-        { id: 'logistiek', name: 'Transport & Logistiek', start: 10, color: '#95a5a6' },
-        { id: 'merk', name: 'Merk (Marketing/Design)', start: 35, color: '#3498db' },
-        { id: 'winkel', name: 'Retail (Winkel/Winst)', start: 25, color: '#9b59b6' },
-        { id: 'btw', name: 'Overheid (BTW 21%)', start: 21, color: '#34495e' }
+    const labels = [
+        '1. Grondstoffen', 
+        '2. Productie', 
+        '3. Confectie', 
+        '4. Merk & Design', 
+        '5. Logistiek & Distr.', 
+        '6. De Laatste Mijl'
     ];
 
-    const bonusGoals = [
-        { id: 'eco', name: 'Ecologische voetafdruk', color: '#27ae60' },
-        { id: 'sociaal', name: 'Sociale wetgeving/Zekerheid', color: '#16a085' },
-        { id: 'kind', name: 'Preventie Kinderarbeid', color: '#2ecc71' }
-    ];
+    // Data objecten
+    let dataInschatting = [0, 0, 0, 0, 0, 0];
+    const dataWerkelijkheid = [3, 4, 6, 18, 9, 10]; // Realistische schatting op €50
+    let dataBonus = [0, 0, 0, 0, 0, 0];
 
-    let myChart;
+    let chart;
 
     function init() {
-        const sliderContainer = document.getElementById('sliders');
-        stakeholders.forEach(s => {
-            sliderContainer.innerHTML += `
-                <div class="slider-group">
-                    <label>${s.name} <span class="value-display">€<span id="val-${s.id}">${s.start}</span></span></label>
-                    <input type="range" id="input-${s.id}" min="0" max="100" value="${s.start}" oninput="update()">
-                </div>
-            `;
-        });
+        const container1 = document.getElementById('sliders-inschattng');
+        const container2 = document.getElementById('sliders-werkelijkheid');
+        const container3 = document.getElementById('sliders-bonus');
 
-        const bonusContainer = document.getElementById('bonus-sliders');
-        bonusGoals.forEach(b => {
-            bonusContainer.innerHTML += `
-                <div class="slider-group">
-                    <label>${b.name} <span class="value-display">€<span id="val-${b.id}">0</span></span></label>
-                    <input type="range" id="input-${b.id}" min="0" max="20" value="0" oninput="update()">
-                </div>
-            `;
+        labels.forEach((label, i) => {
+            // Sliders voor Inschatting
+            container1.innerHTML += createSliderHtml('inschatting', i, label, 0, 50);
+            // Sliders voor Werkelijkheid (readonly/disabled voor de klas)
+            container2.innerHTML += createSliderHtml('werkelijkheid', i, label, dataWerkelijkheid[i], 50, true);
+            // Sliders voor Bonus
+            container3.innerHTML += createSliderHtml('bonus', i, label, 0, 10);
         });
 
         renderChart();
     }
 
-    function update() {
-        let totalBasis = 0;
-        stakeholders.forEach(s => {
-            let val = parseFloat(document.getElementById(`input-${s.id}`).value);
-            totalBasis += val;
-            document.getElementById(`val-${s.id}`).innerText = val;
+    function createSliderHtml(type, index, label, startVal, max, disabled = false) {
+        return `
+            <div class="slider-group">
+                <label>${label} <span class="val-tag">€<span id="val-${type}-${index}">${startVal}</span></span></label>
+                <input type="range" id="input-${type}-${index}" min="0" max="${max}" step="0.5" value="${startVal}" 
+                ${disabled ? 'disabled' : ''} oninput="updateValues()">
+            </div>
+        `;
+    }
+
+    function openTab(evt, tabName) {
+        let contents = document.getElementsByClassName("tab-content");
+        for (let i = 0; i < contents.length; i++) contents[i].style.display = "none";
+        let buttons = document.getElementsByClassName("tab-btn");
+        for (let i = 0; i < buttons.length; i++) buttons[i].className = buttons[i].className.replace(" active", "");
+        document.getElementById(tabName).style.display = "block";
+        evt.currentTarget.className += " active";
+    }
+
+    function updateValues() {
+        let total1 = 0;
+        let total3 = 0;
+
+        labels.forEach((_, i) => {
+            let v1 = parseFloat(document.getElementById(`input-inschatting-${i}`).value);
+            dataInschatting[i] = v1;
+            document.getElementById(`val-inschatting-${i}`).innerText = v1;
+            total1 += v1;
+
+            let v3 = parseFloat(document.getElementById(`input-bonus-${i}`).value);
+            dataBonus[i] = v3;
+            document.getElementById(`val-bonus-${i}`).innerText = v3;
+            total3 += v3;
         });
 
-        let totalBonus = 0;
-        bonusGoals.forEach(b => {
-            let val = parseFloat(document.getElementById(`input-${b.id}`).value);
-            totalBonus += val;
-            document.getElementById(`val-${b.id}`).innerText = val;
-        });
+        // Status updates
+        const s1 = document.getElementById('status-1');
+        s1.innerText = `Totaal: €${total1.toFixed(2)} / €50`;
+        s1.className = (total1 > 50) ? "status-box error" : "status-box ok";
 
-        // Check limieten
-        const warning = document.getElementById('limit-warning');
-        if (totalBasis > 100) {
-            warning.innerText = "WAARSCHUWING: Basisbudget overschrijdt €100!";
-        } else if (totalBasis < 100) {
-            warning.innerText = "Let op: Je hebt nog €" + (100 - totalBasis) + " te verdelen.";
-        } else {
-            warning.innerText = "";
-        }
+        const s3 = document.getElementById('status-3');
+        s3.innerText = `Extra verdeeld: €${total3.toFixed(2)} / €10`;
+        s3.className = (total3 > 10) ? "status-box error" : "status-box ok";
 
-        if (totalBonus > 20) {
-            document.getElementById('final-price').style.background = "#e74c3c";
-            document.getElementById('final-price').innerText = "Bonusbudget te hoog! (max €20)";
-        } else {
-            document.getElementById('final-price').style.background = "#2c3e50";
-            document.getElementById('final-price').innerText = "Totale Verkoopprijs: €" + (totalBasis + totalBonus);
-        }
-
-        updateChart(totalBasis, totalBonus);
+        chart.data.datasets[0].data = dataInschatting;
+        chart.data.datasets[2].data = dataBonus;
+        chart.update();
     }
 
     function renderChart() {
-        const ctx = document.getElementById('distributionChart').getContext('2d');
-        myChart = new Chart(ctx, {
+        const ctx = document.getElementById('mainChart').getContext('2d');
+        chart = new Chart(ctx, {
             type: 'bar',
             data: {
-                labels: stakeholders.map(s => s.name).concat(bonusGoals.map(b => b.name)),
-                datasets: [{
-                    label: 'Euro per product',
-                    data: stakeholders.map(s => s.start).concat(bonusGoals.map(b => 0)),
-                    backgroundColor: stakeholders.map(s => s.color).concat(bonusGoals.map(b => b.color))
-                }]
+                labels: labels,
+                datasets: [
+                    {
+                        label: 'Jullie Inschatting (€50)',
+                        data: dataInschatting,
+                        backgroundColor: '#3498db'
+                    },
+                    {
+                        label: 'De Werkelijkheid (€50)',
+                        data: dataWerkelijkheid,
+                        backgroundColor: '#95a5a6'
+                    },
+                    {
+                        label: 'Extra Duurzaamheid (€10)',
+                        data: dataBonus,
+                        backgroundColor: '#27ae60'
+                    }
+                ]
             },
             options: {
-                scales: { y: { beginAtZero: true, max: 60 } }
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: { 
+                        beginAtZero: true, 
+                        max: 30,
+                        title: { display: true, text: 'Bedrag in Euro' }
+                    }
+                },
+                plugins: {
+                    legend: { position: 'bottom' }
+                }
             }
         });
-    }
-
-    function updateChart() {
-        const newData = stakeholders.map(s => parseFloat(document.getElementById(`input-${s.id}`).value))
-                        .concat(bonusGoals.map(b => parseFloat(document.getElementById(`input-${b.id}`).value)));
-        myChart.data.datasets[0].data = newData;
-        myChart.update();
     }
 
     init();
