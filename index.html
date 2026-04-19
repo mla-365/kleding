@@ -8,7 +8,9 @@
     <style>
         :root {
             --primary: #2c3e50;
-            --accent: #e67e22;
+            --accent: #27ae60;
+            --blue: #3498db;
+            --grey: #95a5a6;
             --bg: #f0f2f5;
             --white: #ffffff;
         }
@@ -30,12 +32,7 @@
             box-shadow: 0 10px 30px rgba(0,0,0,0.1);
         }
 
-        header {
-            text-align: center;
-            margin-bottom: 15px;
-        }
-
-        /* Banner afbeelding */
+        /* Banner afbeelding met titel erin */
         .chain-image {
             width: 100%;
             height: auto;
@@ -69,7 +66,7 @@
         }
 
         .tab-btn.active {
-            background: var(--accent);
+            background: var(--primary);
             color: white;
         }
 
@@ -92,14 +89,15 @@
             font-weight: 600;
         }
 
+        /* Schakelaar voor blauwe sliders */
         input[type="range"] {
             width: 100%;
-            accent-color: var(--accent);
+            accent-color: var(--blue); /* Hier wordt de slider blauw */
         }
 
         .val-tag {
             float: right;
-            color: var(--accent);
+            color: var(--primary);
             font-weight: bold;
         }
 
@@ -134,11 +132,7 @@
 <body>
 
 <div class="container">
-    <header>
-        <h1>De reis van je kleding: De onzichtbare keten van Fast Fashion</h1>
-    </header>
-
-    <img src="https://raw.githubusercontent.com/mla-365/kleding/main/image_52efa4.jpg" alt="De reis van je kleding keten" class="chain-image">
+    <img src="image_52efa4.jpg" alt="De reis van je kleding keten" class="chain-image">
 
     <div class="main-layout">
         <div class="controls">
@@ -149,19 +143,20 @@
             </div>
 
             <div id="tab1" class="tab-content active">
-                <p><small>Verdeel de €50 op basis van jullie Mentimeter resultaten.</small></p>
+                <p><strong>Verdeling van de €50 in de keten-onderdelen (jullie Mentimeter resultaten)</strong></p>
                 <div id="sliders-inschatting"></div>
                 <div id="status-1" class="status-box ok">Totaal: €0 / €50</div>
             </div>
 
             <div id="tab2" class="tab-content">
                 <p><strong>Gemiddelde verdeling in de huidige fast-fashion industrie (€50)</strong></p>
+                <p><small>Dit is een vaste verdeling om te tonen in de grafiek.</small></p>
                 <div id="sliders-werkelijkheid"></div>
                 <div id="status-2" class="status-box ok">Vastgesteld op €50</div>
             </div>
 
             <div id="tab3" class="tab-content">
-                <p><small>Verdeel de extra €10 aan welke onderdelen jullie dit zouden besteden.</small></p>
+                <p><strong>Verdeel de extra €10 aan welke onderdelen jullie dit zouden besteden</strong></p>
                 <div id="sliders-bonus"></div>
                 <div id="status-3" class="status-box ok">Extra te verdelen: €10</div>
             </div>
@@ -189,15 +184,15 @@
         const c3 = document.getElementById('sliders-bonus');
 
         labels.forEach((label, i) => {
-            c1.innerHTML += createSliderHtml('inschatting', i, label, 0, 50);
-            c2.innerHTML += createSliderHtml('werkelijkheid', i, label, dataWerkelijkheid[i], 50, true);
-            c3.innerHTML += createSliderHtml('bonus', i, label, 0, 10);
+            c1.innerHTML += createSliderHtml('inschatting', i, label, 0, 50, false, 'input[type="range"]'); // BLAUWE sliders
+            c2.innerHTML += createSliderHtml('werkelijkheid', i, label, dataWerkelijkheid[i], 50, true, 'input[type="range"]'); // BLAUWE sliders
+            c3.innerHTML += createSliderHtml('bonus', i, label, 0, 10, false, 'input[type="range"]'); // BLAUWE sliders
         });
 
         renderChart();
     }
 
-    function createSliderHtml(type, index, label, startVal, max, disabled = false) {
+    function createSliderHtml(type, index, label, startVal, max, disabled = false, selector) {
         return `
             <div class="slider-group">
                 <label>${label} <span class="val-tag">€<span id="val-${type}-${index}">${startVal}</span></span></label>
@@ -259,9 +254,9 @@
             data: {
                 labels: labels,
                 datasets: [
-                    { label: 'Jullie Inschatting (€50)', data: dataInschatting, backgroundColor: '#3498db' },
-                    { label: 'De Werkelijkheid (€50)', data: [0,0,0,0,0,0], backgroundColor: '#bdc3c7' },
-                    { label: 'Extra Duurzaamheid (€10)', data: dataBonus, backgroundColor: '#27ae60' }
+                    { label: 'Jullie Inschatting (€50)', data: dataInschatting, backgroundColor: '#3498db' }, // Blauwe balken in grafiek
+                    { label: 'De Werkelijkheid (€50)', data: [0,0,0,0,0,0], backgroundColor: '#bdc3c7' }, // Grijze balken in grafiek
+                    { label: 'Extra Duurzaamheid (€10)', data: dataBonus, backgroundColor: '#27ae60' } // Groene balken in grafiek
                 ]
             },
             options: {
