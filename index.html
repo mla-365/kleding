@@ -32,7 +32,6 @@
             box-shadow: 0 10px 30px rgba(0,0,0,0.1);
         }
 
-        /* Banner afbeelding met titel erin */
         .chain-image {
             width: 100%;
             height: auto;
@@ -76,6 +75,7 @@
             padding: 15px;
             border: 1px solid #dfe6e9;
             border-radius: 0 0 8px 8px;
+            min-height: 480px; /* Houdt de hoogte constant */
         }
 
         .tab-content.active { display: block; }
@@ -89,10 +89,9 @@
             font-weight: 600;
         }
 
-        /* Schakelaar voor blauwe sliders */
         input[type="range"] {
             width: 100%;
-            accent-color: var(--blue); /* Hier wordt de slider blauw */
+            accent-color: var(--blue);
         }
 
         .val-tag {
@@ -126,6 +125,7 @@
         @media (max-width: 1000px) {
             .main-layout { grid-template-columns: 1fr; }
             .chart-container { position: relative; height: 400px; }
+            .tab-content { min-height: auto; }
         }
     </style>
 </head>
@@ -150,7 +150,6 @@
 
             <div id="tab2" class="tab-content">
                 <p><strong>Gemiddelde verdeling in de huidige fast-fashion industrie (€50)</strong></p>
-                <p><small>Dit is een vaste verdeling om te tonen in de grafiek.</small></p>
                 <div id="sliders-werkelijkheid"></div>
                 <div id="status-2" class="status-box ok">Vastgesteld op €50</div>
             </div>
@@ -184,15 +183,15 @@
         const c3 = document.getElementById('sliders-bonus');
 
         labels.forEach((label, i) => {
-            c1.innerHTML += createSliderHtml('inschatting', i, label, 0, 50, false, 'input[type="range"]'); // BLAUWE sliders
-            c2.innerHTML += createSliderHtml('werkelijkheid', i, label, dataWerkelijkheid[i], 50, true, 'input[type="range"]'); // BLAUWE sliders
-            c3.innerHTML += createSliderHtml('bonus', i, label, 0, 10, false, 'input[type="range"]'); // BLAUWE sliders
+            c1.innerHTML += createSliderHtml('inschatting', i, label, 0, 50, false);
+            c2.innerHTML += createSliderHtml('werkelijkheid', i, label, dataWerkelijkheid[i], 50, true);
+            c3.innerHTML += createSliderHtml('bonus', i, label, 0, 10, false);
         });
 
         renderChart();
     }
 
-    function createSliderHtml(type, index, label, startVal, max, disabled = false, selector) {
+    function createSliderHtml(type, index, label, startVal, max, disabled = false) {
         return `
             <div class="slider-group">
                 <label>${label} <span class="val-tag">€<span id="val-${type}-${index}">${startVal}</span></span></label>
@@ -212,7 +211,6 @@
         document.getElementById(tabName).style.display = "block";
         evt.currentTarget.className += " active";
 
-        // De logica voor het tonen van de grijze balkjes
         showReality = (tabName === 'tab2' || tabName === 'tab3');
         updateValues();
     }
@@ -240,10 +238,7 @@
 
         chart.data.datasets[0].data = dataInschatting;
         chart.data.datasets[2].data = dataBonus;
-        
-        // Alleen tonen als op tab 2 of 3 geklikt is
         chart.data.datasets[1].data = showReality ? dataWerkelijkheid : [0,0,0,0,0,0];
-        
         chart.update();
     }
 
@@ -254,9 +249,9 @@
             data: {
                 labels: labels,
                 datasets: [
-                    { label: 'Jullie Inschatting (€50)', data: dataInschatting, backgroundColor: '#3498db' }, // Blauwe balken in grafiek
-                    { label: 'De Werkelijkheid (€50)', data: [0,0,0,0,0,0], backgroundColor: '#bdc3c7' }, // Grijze balken in grafiek
-                    { label: 'Extra Duurzaamheid (€10)', data: dataBonus, backgroundColor: '#27ae60' } // Groene balken in grafiek
+                    { label: 'Jullie Inschatting (€50)', data: dataInschatting, backgroundColor: '#3498db' },
+                    { label: 'De Werkelijkheid (€50)', data: [0,0,0,0,0,0], backgroundColor: '#bdc3c7' },
+                    { label: 'Extra Duurzaamheid (€10)', data: dataBonus, backgroundColor: '#27ae60' }
                 ]
             },
             options: {
