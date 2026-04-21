@@ -212,8 +212,7 @@
 <body>
 
 <img src="https://mla-365.github.io/kleding/image_52efa4.jpg" alt="De reis van je kleding" class="header-img">
-<h1>De reis van je kleding<br><span style="font-weight:400;font-size:12px;color:#666;">de onzichtbare keten van Fast Fashion</span></h1>
-<div class="session" id="session-info">sessie: DEMO</div>
+<h1>De reis van je kleding<br><span style="font-weight:400;font-size:12px;color:#666;">De onzichtbare keten van Fast Fashion</span></h1>
 
 <div class="tabs">
   <button class="tab active" data-tab="1">1. Mijn inschatting</button>
@@ -245,8 +244,6 @@
   const cccExtra  = [7, 3, 8, 0, 0, 2];        // CCC-aanbeveling extra €20 (som = 20)
 
   const params = new URLSearchParams(location.search);
-  const sessionCode = (params.get('code') || 'DEMO').toUpperCase();
-  document.getElementById('session-info').textContent = `sessie: ${sessionCode}`;
 
   // === Build thermometer slider rows ===
   function buildSliders(panelNum, max) {
@@ -284,9 +281,9 @@
     document.getElementById(`submit-${panelNum}`).disabled = (total !== max);
   }
 
-  // HARD CONSTRAINT for Tab 1 (max 100, no extra base)
-  // For Tab 2: each slider effectively goes from reality[i] up to reality[i] + (20 - other extras)
-  function wireSliders(panelNum, max) {
+  // HARD CONSTRAINT for Tab 1
+  // sliderMax = visual max per slider, totalMax = sum constraint
+  function wireSliders(panelNum, totalMax) {
     const sliders = document.querySelectorAll(`input[data-panel="${panelNum}"]`);
     sliders.forEach(slider => {
       slider.addEventListener('input', (e) => {
@@ -294,19 +291,19 @@
         const others = Array.from(sliders)
           .filter(s => s !== e.target)
           .reduce((sum, s) => sum + parseInt(s.value), 0);
-        const maxAllowed = max - others;
+        const maxAllowed = totalMax - others;
         if (parseInt(e.target.value) > maxAllowed) {
           e.target.value = maxAllowed;
         }
         document.getElementById(`amt-${panelNum}-${idx}`).textContent = `€${e.target.value}`;
-        updateTotal(panelNum, max);
+        updateTotal(panelNum, totalMax);
       });
     });
   }
 
-  // === BUILD TAB 1 (€100, all sliders start at 0, no black fill until reveal) ===
-  buildSliders(1, 100);
-  wireSliders(1, 100);
+  // === BUILD TAB 1 (slider max=80, total constraint stays at 100) ===
+  buildSliders(1, 80);
+  wireSliders(1, 100);  // total constraint = 100, but individual slider max = 80
 
   // === BUILD TAB 2 ===
   // Special wiring: sliders represent EXTRA only (0-20 sum), but VISUALLY:
@@ -316,7 +313,9 @@
   function buildTab2() {
     const container = document.getElementById('sliders-2');
     container.innerHTML = '';
+    const VISUAL_MAX = 80; // visual scale of the track
     categories.forEach((cat, i) => {
+      const realityPct = (reality[i] / VISUAL_MAX) * 100;
       const row = document.createElement('div');
       row.className = 'slider-row';
       row.innerHTML = `
@@ -326,10 +325,10 @@
         </div>
         <div class="therm-wrapper">
           <div class="therm-track">
-            <div class="therm-fill" id="fill-2-${i}" style="width:${reality[i]}%; background:#222;"></div>
-            <div class="therm-fill" id="ccc-2-${i}" style="width:0%; background:#A8E6BC; left:${reality[i]}%; transition: width 0.8s cubic-bezier(0.4,0,0.2,1);"></div>
+            <div class="therm-fill" id="fill-2-${i}" style="width:${realityPct}%; background:#222;"></div>
+            <div class="therm-fill" id="ccc-2-${i}" style="width:0%; background:#A8E6BC; left:${realityPct}%; transition: width 0.8s cubic-bezier(0.4,0,0.2,1);"></div>
           </div>
-          <input type="range" min="${reality[i]}" max="100" value="${reality[i]}" step="1"
+          <input type="range" min="${reality[i]}" max="${VISUAL_MAX}" value="${reality[i]}" step="1"
                  class="therm-input"
                  data-panel="2" data-idx="${i}" id="sl-2-${i}">
         </div>
@@ -389,48 +388,48 @@
     });
   });
 
-  // === Submit Tab 1: lock sliders, turn button into secret reveal ===
-  document.getElementById('submit-1').addEventListener('click', () => {
-    const sliders = document.querySelectorAll('input[data-panel="1"]');
-    sliders.forEach(s => s.disabled = true);
-    const btn = document.getElementById('submit-1');
-    btn.textContent = '✓ Verstuurd';
-    btn.classList.add('submitted');
-    btn.disabled = false; // stays clickable for hidden reveal
-    btn.dataset.revealed = '0';
-  });
-
-  // Hidden reveal on Tab 1: clicking ✓ Verstuurd button fills black to reality
+  // === Submit Tab 1: TWO CLICK SEQUENCE ===
+  // Click 1: lock sliders, button becomes grey "✓ Verstuurd"
+  // Click 2 (later, on teacher's signal): reveal black reality fill
   document.getElementById('submit-1').addEventListener('click', (e) => {
     const btn = e.currentTarget;
-    if (btn.classList.contains('submitted') && btn.dataset.revealed === '0') {
-      btn.dataset.revealed = '1';
+    const stage = btn.dataset.stage || 'initial';
+
+    if (stage === 'initial') {
+      // First click: lock and switch to "submitted" state
+      const sliders = document.querySelectorAll('input[data-panel="1"]');
+      sliders.forEach(s => s.disabled = true);
+      btn.textContent = '✓ Verstuurd';
+      btn.classList.add('submitted');
+      btn.dataset.stage = 'submitted';
+    } else if (stage === 'submitted') {
+      // Second click: reveal the reality
       categories.forEach((cat, i) => {
         const fill = document.getElementById(`fill-1-${i}`);
-        fill.style.width = `${reality[i]}%`;
+        fill.style.width = `${(reality[i] / 80) * 100}%`;
       });
+      btn.dataset.stage = 'revealed';
     }
+    // If stage is 'revealed', do nothing on further clicks
   });
 
-  // === Submit Tab 2: lock + secret reveal CCC extra ===
-  document.getElementById('submit-2').addEventListener('click', () => {
-    const sliders = document.querySelectorAll('input[data-panel="2"]');
-    sliders.forEach(s => s.disabled = true);
-    const btn = document.getElementById('submit-2');
-    btn.textContent = '✓ Verstuurd';
-    btn.classList.add('submitted');
-    btn.disabled = false;
-    btn.dataset.revealed = '0';
-  });
+  // === Submit Tab 2: TWO CLICK SEQUENCE ===
   document.getElementById('submit-2').addEventListener('click', (e) => {
     const btn = e.currentTarget;
-    if (btn.classList.contains('submitted') && btn.dataset.revealed === '0') {
-      btn.dataset.revealed = '1';
-      // Reveal CCC extra as light-green fill ON TOP of black reality
+    const stage = btn.dataset.stage || 'initial';
+
+    if (stage === 'initial') {
+      const sliders = document.querySelectorAll('input[data-panel="2"]');
+      sliders.forEach(s => s.disabled = true);
+      btn.textContent = '✓ Verstuurd';
+      btn.classList.add('submitted');
+      btn.dataset.stage = 'submitted';
+    } else if (stage === 'submitted') {
       categories.forEach((cat, i) => {
         const ccc = document.getElementById(`ccc-2-${i}`);
-        ccc.style.width = `${cccExtra[i]}%`;
+        ccc.style.width = `${(cccExtra[i] / 80) * 100}%`;
       });
+      btn.dataset.stage = 'revealed';
     }
   });
 
