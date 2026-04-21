@@ -1,270 +1,529 @@
 <!DOCTYPE html>
 <html lang="nl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>De reis van je kleding</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <style>
-        :root {
-            --primary: #2c3e50;
-            --accent: #27ae60;
-            --blue: #3498db;
-            --grey: #95a5a6;
-            --bg: #f0f2f5;
-            --white: #ffffff;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>De onzichtbare keten van onze kleren</title>
+<style>
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body {
+    margin: 0;
+    padding: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: #fafafa;
+    color: #222;
+    font-size: 14px;
+  }
+  body {
+    max-width: 480px;
+    margin: 0 auto;
+    padding: 8px 12px 24px;
+  }
+  h1 {
+    font-size: 16px;
+    font-weight: 600;
+    margin: 6px 0 8px;
+    text-align: center;
+    color: #222;
+  }
+  .session {
+    text-align: center;
+    font-size: 11px;
+    color: #888;
+    margin-bottom: 8px;
+  }
+  .tabs {
+    display: flex;
+    gap: 2px;
+    margin-bottom: 10px;
+    border-bottom: 2px solid #eee;
+  }
+  .tab {
+    flex: 1;
+    padding: 8px 4px;
+    text-align: center;
+    background: none;
+    border: none;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    color: #888;
+    border-bottom: 3px solid transparent;
+    margin-bottom: -2px;
+  }
+  .tab.active { color: #E67E22; border-bottom-color: #E67E22; }
+  .tab.locked { color: #ccc; cursor: not-allowed; }
+  .panel { display: none; }
+  .panel.active { display: block; }
 
-        body {
-            font-family: 'Segoe UI', Arial, sans-serif;
-            background-color: var(--bg);
-            margin: 0;
-            padding: 10px;
-            color: var(--primary);
-        }
+  .slider-row { margin-bottom: 8px; }
+  .slider-label {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 13px;
+    font-weight: 500;
+    margin-bottom: 2px;
+  }
+  .slider-label .amount {
+    color: #E67E22;
+    font-weight: 600;
+    font-size: 13px;
+    min-width: 38px;
+    text-align: right;
+  }
+  input[type="range"] {
+    width: 100%;
+    height: 5px;
+    -webkit-appearance: none;
+    appearance: none;
+    background: #222;
+    border-radius: 3px;
+    outline: none;
+    margin: 0;
+  }
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    background: #4A90E2;
+    cursor: pointer;
+    border: none;
+  }
+  input[type="range"]::-moz-range-thumb {
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    background: #4A90E2;
+    cursor: pointer;
+    border: none;
+  }
+  .total-bar {
+    margin-top: 10px;
+    padding: 9px;
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    text-align: center;
+    font-weight: 600;
+    font-size: 14px;
+  }
+  .total-bar.complete {
+    background: #E67E22;
+    color: white;
+    border-color: #E67E22;
+  }
+  .submit-btn {
+    width: 100%;
+    margin-top: 6px;
+    padding: 11px;
+    background: #222;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .submit-btn:disabled { background: #ccc; cursor: not-allowed; }
+  .submit-btn:not(:disabled):active { background: #000; }
 
-        .container {
-            max-width: 1300px;
-            margin: 0 auto;
-            background: var(--white);
-            padding: 20px;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-        }
+  .comparison {
+    margin-top: 20px;
+    padding: 14px 12px;
+    background: #fff;
+    border-radius: 8px;
+    border: 1px solid #eee;
+  }
+  .comparison h3 {
+    margin: 0 0 10px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #555;
+  }
+  .legend {
+    display: flex;
+    gap: 14px;
+    font-size: 11px;
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+  }
+  .legend-item {
+    display: flex; align-items: center; gap: 5px;
+  }
+  .legend-swatch {
+    width: 12px; height: 12px; border-radius: 2px;
+  }
+  .bar-group { margin-bottom: 10px; }
+  .bar-cat-name {
+    font-size: 12px; color: #444; margin-bottom: 2px;
+  }
+  .bar-pair { display: flex; flex-direction: column; gap: 3px; }
+  .bar-row {
+    display: flex; align-items: center; gap: 6px;
+  }
+  .bar-label {
+    font-size: 10px; color: #888; min-width: 38px;
+  }
+  .bar-track {
+    flex: 1; height: 14px; background: #f0f0f0; border-radius: 3px; overflow: hidden;
+  }
+  .bar-fill {
+    height: 100%; transition: width 0.4s ease;
+  }
+  .bar-fill.mine { background: #4A90E2; }
+  .bar-fill.group { background: #E67E22; }
+  .bar-fill.real { background: #888; }
+  .bar-fill.extra-mine { background: #2ECC71; }
+  .bar-fill.extra-group { background: #A8E6BC; }
+  .bar-value {
+    font-size: 10px; color: #444; min-width: 28px; text-align: right; font-weight: 500;
+  }
 
-        .chain-image {
-            width: 100%;
-            height: auto;
-            border-radius: 10px;
-            margin-bottom: 20px;
-            border: 1px solid #ddd;
-        }
+  .thanks {
+    text-align: center;
+    padding: 16px;
+    background: #fff;
+    border-radius: 6px;
+    margin-top: 8px;
+    border: 1px solid #eee;
+  }
+  .thanks h2 { color: #E67E22; font-size: 15px; margin: 0 0 4px; }
+  .thanks p { font-size: 12px; color: #666; margin: 4px 0; }
 
-        .main-layout {
-            display: grid;
-            grid-template-columns: 450px 1fr;
-            gap: 25px;
-        }
-
-        .tabs {
-            display: flex;
-            gap: 5px;
-            margin-bottom: 15px;
-        }
-
-        .tab-btn {
-            flex: 1;
-            padding: 12px 5px;
-            cursor: pointer;
-            border: none;
-            background: #dfe6e9;
-            font-weight: bold;
-            border-radius: 8px 8px 0 0;
-            transition: 0.3s;
-            font-size: 0.85em;
-        }
-
-        .tab-btn.active {
-            background: var(--primary);
-            color: white;
-        }
-
-        .tab-content {
-            display: none;
-            background: #fdfdfd;
-            padding: 15px;
-            border: 1px solid #dfe6e9;
-            border-radius: 0 0 8px 8px;
-            min-height: 480px; /* Houdt de hoogte constant */
-        }
-
-        .tab-content.active { display: block; }
-
-        .slider-group { margin-bottom: 15px; }
-
-        label {
-            display: block;
-            margin-bottom: 5px;
-            font-size: 0.85em;
-            font-weight: 600;
-        }
-
-        input[type="range"] {
-            width: 100%;
-            accent-color: var(--blue);
-        }
-
-        .val-tag {
-            float: right;
-            color: var(--primary);
-            font-weight: bold;
-        }
-
-        .status-box {
-            margin-top: 10px;
-            padding: 10px;
-            text-align: center;
-            border-radius: 5px;
-            font-weight: bold;
-            font-size: 0.9em;
-        }
-
-        .ok { background: #dfe6e9; color: var(--primary); }
-        .error { background: #fab1a0; color: #d63031; }
-
-        .chart-container {
-            position: sticky;
-            top: 10px;
-            height: 550px;
-            padding: 10px;
-            background: #fff;
-            border: 1px solid #eee;
-            border-radius: 8px;
-        }
-
-        @media (max-width: 1000px) {
-            .main-layout { grid-template-columns: 1fr; }
-            .chart-container { position: relative; height: 400px; }
-            .tab-content { min-height: auto; }
-        }
-    </style>
+  .waiting {
+    text-align: center;
+    padding: 30px 16px;
+    color: #888;
+    font-style: italic;
+    font-size: 13px;
+  }
+</style>
 </head>
 <body>
 
-<div class="container">
-    <img src="image_52efa4.jpg" alt="De reis van je kleding keten" class="chain-image">
+<h1>De onzichtbare keten van onze kleren.</h1>
+<div class="session" id="session-info">sessie: DEMO</div>
 
-    <div class="main-layout">
-        <div class="controls">
-            <div class="tabs">
-                <button class="tab-btn active" onclick="openTab(event, 'tab1')">1. Jullie Inschatting</button>
-                <button class="tab-btn" onclick="openTab(event, 'tab2')">2. De Werkelijkheid</button>
-                <button class="tab-btn" onclick="openTab(event, 'tab3')">3. Extra €10 Duurzaam</button>
-            </div>
+<div class="tabs">
+  <button class="tab active" data-tab="1">1. Mijn inschatting</button>
+  <button class="tab locked" data-tab="2">2. Werkelijkheid</button>
+  <button class="tab locked" data-tab="3">3. Extra €20</button>
+</div>
 
-            <div id="tab1" class="tab-content active">
-                <p><strong>Verdeling van de €50 in de keten-onderdelen (jullie Mentimeter resultaten)</strong></p>
-                <div id="sliders-inschatting"></div>
-                <div id="status-1" class="status-box ok">Totaal: €0 / €50</div>
-            </div>
+<!-- TAB 1 -->
+<div class="panel active" id="panel-1">
+  <div id="sliders-1"></div>
+  <div class="total-bar" id="total-1">Totaal: €0 / €100</div>
+  <button class="submit-btn" id="submit-1" disabled>Verstuur mijn verdeling</button>
 
-            <div id="tab2" class="tab-content">
-                <p><strong>Gemiddelde verdeling in de huidige fast-fashion industrie (€50)</strong></p>
-                <div id="sliders-werkelijkheid"></div>
-                <div id="status-2" class="status-box ok">Vastgesteld op €50</div>
-            </div>
-
-            <div id="tab3" class="tab-content">
-                <p><strong>Verdeel de extra €10 aan welke onderdelen jullie dit zouden besteden</strong></p>
-                <div id="sliders-bonus"></div>
-                <div id="status-3" class="status-box ok">Extra te verdelen: €10</div>
-            </div>
-        </div>
-
-        <div class="chart-container">
-            <canvas id="mainChart"></canvas>
-        </div>
+  <div class="comparison" id="compare-1" style="display:none;">
+    <h3>Mijn inschatting vs. groep</h3>
+    <div class="legend">
+      <div class="legend-item"><div class="legend-swatch" style="background:#4A90E2;"></div>mijn</div>
+      <div class="legend-item"><div class="legend-swatch" style="background:#E67E22;"></div>onze (groep)</div>
     </div>
+    <div id="bars-1"></div>
+  </div>
+</div>
+
+<!-- TAB 2 -->
+<div class="panel" id="panel-2">
+  <div class="comparison">
+    <h3>De werkelijke verdeling van een €100 kledingstuk</h3>
+    <div class="legend">
+      <div class="legend-item"><div class="legend-swatch" style="background:#4A90E2;"></div>mijn</div>
+      <div class="legend-item"><div class="legend-swatch" style="background:#E67E22;"></div>onze</div>
+      <div class="legend-item"><div class="legend-swatch" style="background:#888;"></div>werkelijkheid</div>
+    </div>
+    <div id="bars-2"></div>
+  </div>
+</div>
+
+<!-- TAB 3 -->
+<div class="panel" id="panel-3">
+  <div id="sliders-3"></div>
+  <div class="total-bar" id="total-3">Totaal: €0 / €20</div>
+  <button class="submit-btn" id="submit-3" disabled>Verstuur mijn extra</button>
+
+  <div class="comparison" id="compare-3" style="display:none;">
+    <h3>Waar zou je extra €20 zetten?</h3>
+    <div class="legend">
+      <div class="legend-item"><div class="legend-swatch" style="background:#888;"></div>werkelijkheid</div>
+      <div class="legend-item"><div class="legend-swatch" style="background:#2ECC71;"></div>mijn extra</div>
+      <div class="legend-item"><div class="legend-swatch" style="background:#A8E6BC;"></div>onze extra</div>
+    </div>
+    <div id="bars-3"></div>
+  </div>
 </div>
 
 <script>
-    const labels = ['1. Grondstoffen', '2. Productie', '3. Confectie', '4. Merk & Design', '5. Logistiek & Distr.', '6. De Laatste Mijl'];
-    
-    let dataInschatting = [0, 0, 0, 0, 0, 0];
-    const dataWerkelijkheid = [3, 4, 6, 18, 9, 10]; 
-    let dataBonus = [0, 0, 0, 0, 0, 0];
-    let showReality = false;
+  // === CONFIG ===
+  const categories = [
+    "Grondstoffen",
+    "Fabrieken",
+    "Arbeiderslonen",
+    "Merk & Design",
+    "Winkel",
+    "Transport"
+  ];
+  const reality = [12, 4, 1, 12, 58, 13]; // €100 verdeling werkelijkheid
 
-    let chart;
+  // === Session code from URL ===
+  const params = new URLSearchParams(location.search);
+  const sessionCode = (params.get('code') || 'DEMO').toUpperCase();
+  document.getElementById('session-info').textContent = `sessie: ${sessionCode}`;
 
-    function init() {
-        const c1 = document.getElementById('sliders-inschatting');
-        const c2 = document.getElementById('sliders-werkelijkheid');
-        const c3 = document.getElementById('sliders-bonus');
+  // === Build sliders ===
+  function buildSliders(panelNum, max) {
+    const container = document.getElementById(`sliders-${panelNum}`);
+    categories.forEach((cat, i) => {
+      const row = document.createElement('div');
+      row.className = 'slider-row';
+      row.innerHTML = `
+        <div class="slider-label">
+          <span>${cat}</span>
+          <span class="amount" id="amt-${panelNum}-${i}">€0</span>
+        </div>
+        <input type="range" min="0" max="${max}" value="0" step="1"
+               data-panel="${panelNum}" data-idx="${i}" id="sl-${panelNum}-${i}">
+      `;
+      container.appendChild(row);
+    });
+  }
 
-        labels.forEach((label, i) => {
-            c1.innerHTML += createSliderHtml('inschatting', i, label, 0, 50, false);
-            c2.innerHTML += createSliderHtml('werkelijkheid', i, label, dataWerkelijkheid[i], 50, true);
-            c3.innerHTML += createSliderHtml('bonus', i, label, 0, 10, false);
-        });
+  function updateTotal(panelNum, max) {
+    const sliders = document.querySelectorAll(`input[data-panel="${panelNum}"]`);
+    let total = 0;
+    sliders.forEach(s => total += parseInt(s.value));
+    const bar = document.getElementById(`total-${panelNum}`);
+    bar.textContent = `Totaal: €${total} / €${max}`;
+    bar.classList.toggle('complete', total === max);
+    document.getElementById(`submit-${panelNum}`).disabled = (total !== max);
+  }
 
-        renderChart();
+  // HARD CONSTRAINT — slider can never push total > max
+  function wireSliders(panelNum, max) {
+    const sliders = document.querySelectorAll(`input[data-panel="${panelNum}"]`);
+    sliders.forEach(slider => {
+      slider.addEventListener('input', (e) => {
+        const idx = e.target.dataset.idx;
+        const others = Array.from(sliders)
+          .filter(s => s !== e.target)
+          .reduce((sum, s) => sum + parseInt(s.value), 0);
+        const maxAllowed = max - others;
+        if (parseInt(e.target.value) > maxAllowed) {
+          e.target.value = maxAllowed;
+        }
+        document.getElementById(`amt-${panelNum}-${idx}`).textContent = `€${e.target.value}`;
+        updateTotal(panelNum, max);
+      });
+    });
+  }
+
+  buildSliders(1, 100);
+  buildSliders(3, 20);
+  wireSliders(1, 100);
+  wireSliders(3, 20);
+
+  // === Tab switching ===
+  document.querySelectorAll('.tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      if (tab.classList.contains('locked')) {
+        alert('Deze tab wordt door de docent geopend.');
+        return;
+      }
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+      tab.classList.add('active');
+      document.getElementById(`panel-${tab.dataset.tab}`).classList.add('active');
+    });
+  });
+
+  // === Mock backend (localStorage) — Stap 3 vervangt door Supabase ===
+  function getMyAnswer(tab) {
+    const k = `kleding_my_${sessionCode}_t${tab}`;
+    return JSON.parse(localStorage.getItem(k) || 'null');
+  }
+  function saveMyAnswer(tab, data) {
+    localStorage.setItem(`kleding_my_${sessionCode}_t${tab}`, JSON.stringify(data));
+  }
+
+  // Mock group average — fake numbers slightly off from reality so leerlingen zien iets
+  function getGroupAverage(tab) {
+    if (tab === 1) {
+      return [18, 12, 15, 14, 28, 13]; // sums to 100, fake "groep"
+    } else {
+      return [3, 3, 6, 2, 2, 4]; // sums to 20, fake "groep extra"
     }
+  }
 
-    function createSliderHtml(type, index, label, startVal, max, disabled = false) {
-        return `
-            <div class="slider-group">
-                <label>${label} <span class="val-tag">€<span id="val-${type}-${index}">${startVal}</span></span></label>
-                <input type="range" id="input-${type}-${index}" min="0" max="${max}" step="0.5" value="${startVal}" 
-                ${disabled ? 'disabled' : ''} oninput="updateValues()">
+  // === Render comparison bars ===
+  function renderBars(panelNum, max) {
+    const container = document.getElementById(`bars-${panelNum}`);
+    container.innerHTML = '';
+    const mine = getMyAnswer(panelNum);
+    const group = getGroupAverage(panelNum);
+
+    categories.forEach((cat, i) => {
+      const myVal = mine ? mine[i] : 0;
+      const grpVal = group[i];
+      let html = `
+        <div class="bar-group">
+          <div class="bar-cat-name">${cat}</div>
+          <div class="bar-pair">
+            <div class="bar-row">
+              <span class="bar-label">mijn</span>
+              <div class="bar-track"><div class="bar-fill mine" style="width:${(myVal/max)*100}%"></div></div>
+              <span class="bar-value">€${myVal}</span>
             </div>
-        `;
+            <div class="bar-row">
+              <span class="bar-label">onze</span>
+              <div class="bar-track"><div class="bar-fill group" style="width:${(grpVal/max)*100}%"></div></div>
+              <span class="bar-value">€${grpVal}</span>
+            </div>
+          </div>
+        </div>
+      `;
+      container.innerHTML += html;
+    });
+  }
+
+  // === Render Tab 2 — 3-way comparison ===
+  function renderTab2() {
+    const container = document.getElementById('bars-2');
+    container.innerHTML = '';
+    const mine = getMyAnswer(1) || [0,0,0,0,0,0];
+    const group = getGroupAverage(1);
+    const max = 100;
+
+    categories.forEach((cat, i) => {
+      const html = `
+        <div class="bar-group">
+          <div class="bar-cat-name">${cat}</div>
+          <div class="bar-pair">
+            <div class="bar-row">
+              <span class="bar-label">mijn</span>
+              <div class="bar-track"><div class="bar-fill mine" style="width:${(mine[i]/max)*100}%"></div></div>
+              <span class="bar-value">€${mine[i]}</span>
+            </div>
+            <div class="bar-row">
+              <span class="bar-label">onze</span>
+              <div class="bar-track"><div class="bar-fill group" style="width:${(group[i]/max)*100}%"></div></div>
+              <span class="bar-value">€${group[i]}</span>
+            </div>
+            <div class="bar-row">
+              <span class="bar-label">echt</span>
+              <div class="bar-track"><div class="bar-fill real" style="width:${(reality[i]/max)*100}%"></div></div>
+              <span class="bar-value">€${reality[i]}</span>
+            </div>
+          </div>
+        </div>
+      `;
+      container.innerHTML += html;
+    });
+  }
+
+  // === Render Tab 3 comparison — werkelijkheid grijs + extra groen ===
+  function renderTab3() {
+    const container = document.getElementById('bars-3');
+    container.innerHTML = '';
+    const mineExtra = getMyAnswer(3);
+    const groupExtra = getGroupAverage(3);
+    const max = 60; // schaal voor visuele vergelijking (werkelijkheid kan 58 zijn)
+
+    categories.forEach((cat, i) => {
+      const myVal = mineExtra ? mineExtra[i] : 0;
+      const grpVal = groupExtra[i];
+      const html = `
+        <div class="bar-group">
+          <div class="bar-cat-name">${cat}</div>
+          <div class="bar-pair">
+            <div class="bar-row">
+              <span class="bar-label">echt</span>
+              <div class="bar-track"><div class="bar-fill real" style="width:${(reality[i]/max)*100}%"></div></div>
+              <span class="bar-value">€${reality[i]}</span>
+            </div>
+            <div class="bar-row">
+              <span class="bar-label">+mijn</span>
+              <div class="bar-track"><div class="bar-fill extra-mine" style="width:${(myVal/max)*100}%"></div></div>
+              <span class="bar-value">€${myVal}</span>
+            </div>
+            <div class="bar-row">
+              <span class="bar-label">+onze</span>
+              <div class="bar-track"><div class="bar-fill extra-group" style="width:${(grpVal/max)*100}%"></div></div>
+              <span class="bar-value">€${grpVal}</span>
+            </div>
+          </div>
+        </div>
+      `;
+      container.innerHTML += html;
+    });
+  }
+
+  // === Submit handlers ===
+  function submitTab(tab, max) {
+    const sliders = document.querySelectorAll(`input[data-panel="${tab}"]`);
+    const data = Array.from(sliders).map(s => parseInt(s.value));
+    saveMyAnswer(tab, data);
+    if (tab === 1) {
+      document.getElementById('compare-1').style.display = 'block';
+      renderBars(1, 100);
+      // disable sliders & button
+      sliders.forEach(s => s.disabled = true);
+      document.getElementById('submit-1').textContent = '✓ Verstuurd';
+      document.getElementById('submit-1').disabled = true;
+    } else if (tab === 3) {
+      document.getElementById('compare-3').style.display = 'block';
+      renderTab3();
+      sliders.forEach(s => s.disabled = true);
+      document.getElementById('submit-3').textContent = '✓ Verstuurd';
+      document.getElementById('submit-3').disabled = true;
     }
+  }
+  document.getElementById('submit-1').addEventListener('click', () => submitTab(1, 100));
+  document.getElementById('submit-3').addEventListener('click', () => submitTab(3, 20));
 
-    function openTab(evt, tabName) {
-        let contents = document.getElementsByClassName("tab-content");
-        for (let i = 0; i < contents.length; i++) contents[i].style.display = "none";
-        
-        let buttons = document.getElementsByClassName("tab-btn");
-        for (let i = 0; i < buttons.length; i++) buttons[i].className = buttons[i].className.replace(" active", "");
-        
-        document.getElementById(tabName).style.display = "block";
-        evt.currentTarget.className += " active";
+  // Render Tab 2 when opened (always renders fresh)
+  document.querySelector('.tab[data-tab="2"]').addEventListener('click', renderTab2);
 
-        showReality = (tabName === 'tab2' || tabName === 'tab3');
-        updateValues();
-    }
+  // Teacher unlock via URL
+  if (params.get('teacher') === '1' || params.get('unlock') === '2') {
+    document.querySelector('.tab[data-tab="2"]').classList.remove('locked');
+  }
+  if (params.get('teacher') === '1' || params.get('unlock') === '3') {
+    document.querySelector('.tab[data-tab="3"]').classList.remove('locked');
+  }
 
-    function updateValues() {
-        let total1 = 0, total3 = 0;
-
-        labels.forEach((_, i) => {
-            let v1 = parseFloat(document.getElementById(`input-inschatting-${i}`).value);
-            dataInschatting[i] = v1;
-            document.getElementById(`val-inschatting-${i}`).innerText = v1;
-            total1 += v1;
-
-            let v3 = parseFloat(document.getElementById(`input-bonus-${i}`).value);
-            dataBonus[i] = v3;
-            document.getElementById(`val-bonus-${i}`).innerText = v3;
-            total3 += v3;
-        });
-
-        document.getElementById('status-1').innerText = `Totaal: €${total1.toFixed(2)} / €50`;
-        document.getElementById('status-1').className = (total1 > 50) ? "status-box error" : "status-box ok";
-
-        document.getElementById('status-3').innerText = `Extra verdeeld: €${total3.toFixed(2)} / €10`;
-        document.getElementById('status-3').className = (total3 > 10) ? "status-box error" : "status-box ok";
-
-        chart.data.datasets[0].data = dataInschatting;
-        chart.data.datasets[2].data = dataBonus;
-        chart.data.datasets[1].data = showReality ? dataWerkelijkheid : [0,0,0,0,0,0];
-        chart.update();
-    }
-
-    function renderChart() {
-        const ctx = document.getElementById('mainChart').getContext('2d');
-        chart = new Chart(ctx, {
-            type: 'bar',
-            data: {
-                labels: labels,
-                datasets: [
-                    { label: 'Jullie Inschatting (€50)', data: dataInschatting, backgroundColor: '#3498db' },
-                    { label: 'De Werkelijkheid (€50)', data: [0,0,0,0,0,0], backgroundColor: '#bdc3c7' },
-                    { label: 'Extra Duurzaamheid (€10)', data: dataBonus, backgroundColor: '#27ae60' }
-                ]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                scales: {
-                    y: { beginAtZero: true, max: 30, title: { display: true, text: 'Euro' } }
-                },
-                plugins: { legend: { position: 'bottom' } }
-            }
-        });
-    }
-    init();
+  // Restore previous answers if leerling refresht
+  const prev1 = getMyAnswer(1);
+  if (prev1) {
+    prev1.forEach((v, i) => {
+      const sl = document.getElementById(`sl-1-${i}`);
+      sl.value = v;
+      sl.disabled = true;
+      document.getElementById(`amt-1-${i}`).textContent = `€${v}`;
+    });
+    updateTotal(1, 100);
+    document.getElementById('submit-1').textContent = '✓ Verstuurd';
+    document.getElementById('submit-1').disabled = true;
+    document.getElementById('compare-1').style.display = 'block';
+    renderBars(1, 100);
+  }
+  const prev3 = getMyAnswer(3);
+  if (prev3) {
+    prev3.forEach((v, i) => {
+      const sl = document.getElementById(`sl-3-${i}`);
+      sl.value = v;
+      sl.disabled = true;
+      document.getElementById(`amt-3-${i}`).textContent = `€${v}`;
+    });
+    updateTotal(3, 20);
+    document.getElementById('submit-3').textContent = '✓ Verstuurd';
+    document.getElementById('submit-3').disabled = true;
+    document.getElementById('compare-3').style.display = 'block';
+    renderTab3();
+  }
 </script>
 
 </body>
