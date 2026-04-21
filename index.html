@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>De onzichtbare keten van onze kleren</title>
+<title>De reis van je kleding</title>
 <style>
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
   html, body {
@@ -20,11 +20,20 @@
     padding: 8px 12px 24px;
   }
   h1 {
-    font-size: 16px;
+    font-size: 15px;
     font-weight: 600;
-    margin: 6px 0 8px;
+    margin: 4px 0 6px;
     text-align: center;
     color: #222;
+    line-height: 1.25;
+  }
+  .header-img {
+    display: block;
+    width: 100%;
+    max-height: 110px;
+    object-fit: cover;
+    border-radius: 6px;
+    margin-bottom: 6px;
   }
   .session {
     text-align: center;
@@ -202,7 +211,8 @@
 </head>
 <body>
 
-<h1>De onzichtbare keten van onze kleren.</h1>
+<img src="https://mla-365.github.io/kleding/image_52efa4.jpg" alt="De reis van je kleding" class="header-img">
+<h1>De reis van je kleding<br><span style="font-weight:400;font-size:12px;color:#666;">de onzichtbare keten van Fast Fashion</span></h1>
 <div class="session" id="session-info">sessie: DEMO</div>
 
 <div class="tabs">
@@ -330,7 +340,7 @@
   document.querySelectorAll('.tab').forEach(tab => {
     tab.addEventListener('click', () => {
       if (tab.classList.contains('locked')) {
-        alert('Deze tab wordt door de docent geopend.');
+        alert('Deze tab wordt door de leerkracht geopend.');
         return;
       }
       document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
