@@ -81,6 +81,31 @@
     min-width: 38px;
     text-align: right;
   }
+  .amounts {
+    display: inline-flex;
+    gap: 6px;
+    align-items: center;
+  }
+  .amount-real {
+    color: #222;
+    font-weight: 600;
+    font-size: 13px;
+    min-width: 38px;
+    text-align: right;
+    opacity: 0;
+    transition: opacity 0.4s ease;
+  }
+  .amount-real.shown { opacity: 1; }
+  .amount-ccc {
+    color: #2ECC71;
+    font-weight: 600;
+    font-size: 13px;
+    min-width: 38px;
+    text-align: right;
+    opacity: 0;
+    transition: opacity 0.4s ease;
+  }
+  .amount-ccc.shown { opacity: 1; }
 
   /* === THERMOMETER SLIDER === */
   .therm-wrapper {
@@ -255,7 +280,10 @@
       row.innerHTML = `
         <div class="slider-label">
           <span>${cat}</span>
-          <span class="amount" id="amt-${panelNum}-${i}">€0</span>
+          <span class="amounts">
+            <span class="amount" id="amt-${panelNum}-${i}">€0</span>
+            <span class="amount-real" id="real-${panelNum}-${i}"></span>
+          </span>
         </div>
         <div class="therm-wrapper">
           <div class="therm-track">
@@ -321,7 +349,10 @@
       row.innerHTML = `
         <div class="slider-label">
           <span>${cat}</span>
-          <span class="amount" id="amt-2-${i}">+€0</span>
+          <span class="amounts">
+            <span class="amount" id="amt-2-${i}">+€0</span>
+            <span class="amount-ccc" id="ccc-num-2-${i}"></span>
+          </span>
         </div>
         <div class="therm-wrapper">
           <div class="therm-track">
@@ -403,11 +434,16 @@
       btn.classList.add('submitted');
       btn.dataset.stage = 'submitted';
     } else if (stage === 'submitted') {
-      // Second click: reveal the reality
+      // Second click: reveal the reality (black fill + black numbers + unlock Tab 2)
       categories.forEach((cat, i) => {
         const fill = document.getElementById(`fill-1-${i}`);
         fill.style.width = `${(reality[i] / 80) * 100}%`;
+        const realLabel = document.getElementById(`real-1-${i}`);
+        realLabel.textContent = `€${reality[i]}`;
+        realLabel.classList.add('shown');
       });
+      // Unlock Tab 2 automatically
+      document.querySelector('.tab[data-tab="2"]').classList.remove('locked');
       btn.dataset.stage = 'revealed';
     }
     // If stage is 'revealed', do nothing on further clicks
@@ -428,6 +464,9 @@
       categories.forEach((cat, i) => {
         const ccc = document.getElementById(`ccc-2-${i}`);
         ccc.style.width = `${(cccExtra[i] / 80) * 100}%`;
+        const cccLabel = document.getElementById(`ccc-num-2-${i}`);
+        cccLabel.textContent = `+€${cccExtra[i]}`;
+        cccLabel.classList.add('shown');
       });
       btn.dataset.stage = 'revealed';
     }
