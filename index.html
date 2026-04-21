@@ -19,14 +19,6 @@
     margin: 0 auto;
     padding: 8px 12px 24px;
   }
-  h1 {
-    font-size: 15px;
-    font-weight: 600;
-    margin: 4px 0 6px;
-    text-align: center;
-    color: #222;
-    line-height: 1.25;
-  }
   .header-img {
     display: block;
     width: 100%;
@@ -34,6 +26,14 @@
     object-fit: cover;
     border-radius: 6px;
     margin-bottom: 6px;
+  }
+  h1 {
+    font-size: 15px;
+    font-weight: 600;
+    margin: 4px 0 6px;
+    text-align: center;
+    color: #222;
+    line-height: 1.25;
   }
   .session {
     text-align: center;
@@ -60,55 +60,105 @@
     border-bottom: 3px solid transparent;
     margin-bottom: -2px;
   }
-  .tab.active { color: #E67E22; border-bottom-color: #E67E22; }
+  .tab.active { color: #4A90E2; border-bottom-color: #4A90E2; }
   .tab.locked { color: #ccc; cursor: not-allowed; }
   .panel { display: none; }
   .panel.active { display: block; }
 
-  .slider-row { margin-bottom: 8px; }
+  .slider-row { margin-bottom: 10px; }
   .slider-label {
     display: flex;
     justify-content: space-between;
     align-items: center;
     font-size: 13px;
     font-weight: 500;
-    margin-bottom: 2px;
+    margin-bottom: 3px;
   }
   .slider-label .amount {
-    color: #E67E22;
+    color: #4A90E2;
     font-weight: 600;
     font-size: 13px;
     min-width: 38px;
     text-align: right;
   }
-  input[type="range"] {
-    width: 100%;
-    height: 5px;
-    -webkit-appearance: none;
-    appearance: none;
-    background: #222;
+
+  /* === THERMOMETER SLIDER === */
+  .therm-wrapper {
+    position: relative;
+    height: 22px;
+    display: flex;
+    align-items: center;
+  }
+  .therm-track {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    left: 0; right: 0;
+    height: 6px;
+    background: #d8d8d8;
     border-radius: 3px;
-    outline: none;
-    margin: 0;
+    overflow: hidden;
   }
-  input[type="range"]::-webkit-slider-thumb {
+  .therm-fill {
+    position: absolute;
+    top: 0; left: 0; bottom: 0;
+    background: #222;
+    width: 0%;
+    transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+    border-radius: 3px;
+  }
+  /* Native range overlay — invisible track, only thumb visible */
+  .therm-input {
+    position: relative;
+    width: 100%;
+    -webkit-appearance: none;
+    appearance: none;
+    background: transparent;
+    height: 22px;
+    margin: 0;
+    z-index: 2;
+    outline: none;
+  }
+  .therm-input::-webkit-slider-runnable-track {
+    background: transparent;
+    height: 22px;
+    border: none;
+  }
+  .therm-input::-moz-range-track {
+    background: transparent;
+    height: 22px;
+    border: none;
+  }
+  .therm-input::-webkit-slider-thumb {
     -webkit-appearance: none;
     appearance: none;
     width: 22px; height: 22px;
     border-radius: 50%;
     background: #4A90E2;
     cursor: pointer;
-    border: none;
+    border: 2px solid #fff;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+    margin-top: 0;
   }
-  input[type="range"]::-moz-range-thumb {
+  .therm-input::-moz-range-thumb {
     width: 22px; height: 22px;
     border-radius: 50%;
     background: #4A90E2;
     cursor: pointer;
-    border: none;
+    border: 2px solid #fff;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
   }
+  .therm-input:disabled::-webkit-slider-thumb {
+    background: #4A90E2;
+    opacity: 0.85;
+  }
+  .therm-input:disabled::-moz-range-thumb {
+    background: #4A90E2;
+    opacity: 0.85;
+  }
+
   .total-bar {
-    margin-top: 10px;
+    margin-top: 12px;
     padding: 9px;
     background: #fff;
     border: 1px solid #ddd;
@@ -118,94 +168,44 @@
     font-size: 14px;
   }
   .total-bar.complete {
-    background: #E67E22;
+    background: #4A90E2;
     color: white;
-    border-color: #E67E22;
+    border-color: #4A90E2;
   }
   .submit-btn {
     width: 100%;
     margin-top: 6px;
     padding: 11px;
-    background: #222;
+    background: #4A90E2;
     color: white;
     border: none;
     border-radius: 6px;
     font-size: 14px;
     font-weight: 600;
     cursor: pointer;
+    transition: background 0.2s;
   }
-  .submit-btn:disabled { background: #ccc; cursor: not-allowed; }
-  .submit-btn:not(:disabled):active { background: #000; }
+  .submit-btn:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+  }
+  .submit-btn.submitted {
+    background: #999;
+    color: #fff;
+    cursor: pointer; /* secret reveal trigger */
+  }
+  .submit-btn:not(:disabled):not(.submitted):active { background: #357ABD; }
+  .submit-btn.submitted:active { background: #777; }
 
-  .comparison {
-    margin-top: 20px;
-    padding: 14px 12px;
-    background: #fff;
-    border-radius: 8px;
-    border: 1px solid #eee;
-  }
-  .comparison h3 {
-    margin: 0 0 10px;
-    font-size: 13px;
-    font-weight: 600;
+  .intro {
+    font-size: 12px;
     color: #555;
-  }
-  .legend {
-    display: flex;
-    gap: 14px;
-    font-size: 11px;
-    margin-bottom: 12px;
-    flex-wrap: wrap;
-  }
-  .legend-item {
-    display: flex; align-items: center; gap: 5px;
-  }
-  .legend-swatch {
-    width: 12px; height: 12px; border-radius: 2px;
-  }
-  .bar-group { margin-bottom: 10px; }
-  .bar-cat-name {
-    font-size: 12px; color: #444; margin-bottom: 2px;
-  }
-  .bar-pair { display: flex; flex-direction: column; gap: 3px; }
-  .bar-row {
-    display: flex; align-items: center; gap: 6px;
-  }
-  .bar-label {
-    font-size: 10px; color: #888; min-width: 38px;
-  }
-  .bar-track {
-    flex: 1; height: 14px; background: #f0f0f0; border-radius: 3px; overflow: hidden;
-  }
-  .bar-fill {
-    height: 100%; transition: width 0.4s ease;
-  }
-  .bar-fill.mine { background: #4A90E2; }
-  .bar-fill.group { background: #E67E22; }
-  .bar-fill.real { background: #888; }
-  .bar-fill.extra-mine { background: #2ECC71; }
-  .bar-fill.extra-group { background: #A8E6BC; }
-  .bar-value {
-    font-size: 10px; color: #444; min-width: 28px; text-align: right; font-weight: 500;
-  }
-
-  .thanks {
-    text-align: center;
-    padding: 16px;
+    margin-bottom: 10px;
+    padding: 8px 10px;
     background: #fff;
-    border-radius: 6px;
-    margin-top: 8px;
-    border: 1px solid #eee;
-  }
-  .thanks h2 { color: #E67E22; font-size: 15px; margin: 0 0 4px; }
-  .thanks p { font-size: 12px; color: #666; margin: 4px 0; }
-
-  .waiting {
-    text-align: center;
-    padding: 30px 16px;
-    color: #888;
-    font-style: italic;
-    font-size: 13px;
+    border-left: 3px solid #4A90E2;
+    border-radius: 4px;
+    line-height: 1.4;
   }
 </style>
 </head>
@@ -217,8 +217,7 @@
 
 <div class="tabs">
   <button class="tab active" data-tab="1">1. Mijn inschatting</button>
-  <button class="tab locked" data-tab="2">2. Werkelijkheid</button>
-  <button class="tab locked" data-tab="3">3. Extra €20</button>
+  <button class="tab locked" data-tab="2">2. Extra €20</button>
 </div>
 
 <!-- TAB 1 -->
@@ -226,67 +225,33 @@
   <div id="sliders-1"></div>
   <div class="total-bar" id="total-1">Totaal: €0 / €100</div>
   <button class="submit-btn" id="submit-1" disabled>Verstuur mijn verdeling</button>
-
-  <div class="comparison" id="compare-1" style="display:none;">
-    <h3>Mijn inschatting vs. groep</h3>
-    <div class="legend">
-      <div class="legend-item"><div class="legend-swatch" style="background:#4A90E2;"></div>mijn</div>
-      <div class="legend-item"><div class="legend-swatch" style="background:#E67E22;"></div>onze (groep)</div>
-    </div>
-    <div id="bars-1"></div>
-  </div>
 </div>
 
 <!-- TAB 2 -->
 <div class="panel" id="panel-2">
-  <div class="comparison">
-    <h3>De werkelijke verdeling van een €100 kledingstuk</h3>
-    <div class="legend">
-      <div class="legend-item"><div class="legend-swatch" style="background:#4A90E2;"></div>mijn</div>
-      <div class="legend-item"><div class="legend-swatch" style="background:#E67E22;"></div>onze</div>
-      <div class="legend-item"><div class="legend-swatch" style="background:#888;"></div>werkelijkheid</div>
-    </div>
-    <div id="bars-2"></div>
+  <div class="intro">
+    Je ziet hieronder de werkelijke verdeling (zwart). Stel: je hebt €20 extra.
+    Waar zou jij die inzetten voor een eerlijkere en duurzamere keten?
   </div>
-</div>
-
-<!-- TAB 3 -->
-<div class="panel" id="panel-3">
-  <div id="sliders-3"></div>
-  <div class="total-bar" id="total-3">Totaal: €0 / €20</div>
-  <button class="submit-btn" id="submit-3" disabled>Verstuur mijn extra</button>
-
-  <div class="comparison" id="compare-3" style="display:none;">
-    <h3>Waar zou je extra €20 zetten?</h3>
-    <div class="legend">
-      <div class="legend-item"><div class="legend-swatch" style="background:#888;"></div>werkelijkheid</div>
-      <div class="legend-item"><div class="legend-swatch" style="background:#2ECC71;"></div>mijn extra</div>
-      <div class="legend-item"><div class="legend-swatch" style="background:#A8E6BC;"></div>onze extra</div>
-    </div>
-    <div id="bars-3"></div>
-  </div>
+  <div id="sliders-2"></div>
+  <div class="total-bar" id="total-2">Extra: €0 / €20</div>
+  <button class="submit-btn" id="submit-2" disabled>Verstuur mijn extra</button>
 </div>
 
 <script>
   // === CONFIG ===
-  const categories = [
-    "Grondstoffen",
-    "Fabrieken",
-    "Arbeiderslonen",
-    "Merk & Design",
-    "Winkel",
-    "Transport"
-  ];
-  const reality = [12, 4, 1, 12, 58, 13]; // €100 verdeling werkelijkheid
+  const categories = ["Grondstoffen", "Fabrieken", "Arbeiderslonen", "Merk & Design", "Winkel", "Transport"];
+  const reality   = [12, 4, 1, 12, 58, 13];   // werkelijkheid op €100 (som = 100)
+  const cccExtra  = [7, 3, 8, 0, 0, 2];        // CCC-aanbeveling extra €20 (som = 20)
 
-  // === Session code from URL ===
   const params = new URLSearchParams(location.search);
   const sessionCode = (params.get('code') || 'DEMO').toUpperCase();
   document.getElementById('session-info').textContent = `sessie: ${sessionCode}`;
 
-  // === Build sliders ===
+  // === Build thermometer slider rows ===
   function buildSliders(panelNum, max) {
     const container = document.getElementById(`sliders-${panelNum}`);
+    container.innerHTML = '';
     categories.forEach((cat, i) => {
       const row = document.createElement('div');
       row.className = 'slider-row';
@@ -295,8 +260,14 @@
           <span>${cat}</span>
           <span class="amount" id="amt-${panelNum}-${i}">€0</span>
         </div>
-        <input type="range" min="0" max="${max}" value="0" step="1"
-               data-panel="${panelNum}" data-idx="${i}" id="sl-${panelNum}-${i}">
+        <div class="therm-wrapper">
+          <div class="therm-track">
+            <div class="therm-fill" id="fill-${panelNum}-${i}"></div>
+          </div>
+          <input type="range" min="0" max="${max}" value="0" step="1"
+                 class="therm-input"
+                 data-panel="${panelNum}" data-idx="${i}" id="sl-${panelNum}-${i}">
+        </div>
       `;
       container.appendChild(row);
     });
@@ -307,17 +278,19 @@
     let total = 0;
     sliders.forEach(s => total += parseInt(s.value));
     const bar = document.getElementById(`total-${panelNum}`);
-    bar.textContent = `Totaal: €${total} / €${max}`;
+    const label = panelNum === 2 ? 'Extra' : 'Totaal';
+    bar.textContent = `${label}: €${total} / €${max}`;
     bar.classList.toggle('complete', total === max);
     document.getElementById(`submit-${panelNum}`).disabled = (total !== max);
   }
 
-  // HARD CONSTRAINT — slider can never push total > max
+  // HARD CONSTRAINT for Tab 1 (max 100, no extra base)
+  // For Tab 2: each slider effectively goes from reality[i] up to reality[i] + (20 - other extras)
   function wireSliders(panelNum, max) {
     const sliders = document.querySelectorAll(`input[data-panel="${panelNum}"]`);
     sliders.forEach(slider => {
       slider.addEventListener('input', (e) => {
-        const idx = e.target.dataset.idx;
+        const idx = parseInt(e.target.dataset.idx);
         const others = Array.from(sliders)
           .filter(s => s !== e.target)
           .reduce((sum, s) => sum + parseInt(s.value), 0);
@@ -331,10 +304,76 @@
     });
   }
 
+  // === BUILD TAB 1 (€100, all sliders start at 0, no black fill until reveal) ===
   buildSliders(1, 100);
-  buildSliders(3, 20);
   wireSliders(1, 100);
-  wireSliders(3, 20);
+
+  // === BUILD TAB 2 ===
+  // Special wiring: sliders represent EXTRA only (0-20 sum), but VISUALLY:
+  //   - black fill = reality[i] (always visible)
+  //   - blue thumb = reality[i] + extra[i]  (positions from reality up)
+  // Total constraint: sum of extras <= 20
+  function buildTab2() {
+    const container = document.getElementById('sliders-2');
+    container.innerHTML = '';
+    categories.forEach((cat, i) => {
+      const row = document.createElement('div');
+      row.className = 'slider-row';
+      row.innerHTML = `
+        <div class="slider-label">
+          <span>${cat}</span>
+          <span class="amount" id="amt-2-${i}">+€0</span>
+        </div>
+        <div class="therm-wrapper">
+          <div class="therm-track">
+            <div class="therm-fill" id="fill-2-${i}" style="width:${reality[i]}%; background:#222;"></div>
+            <div class="therm-fill" id="ccc-2-${i}" style="width:0%; background:#A8E6BC; left:${reality[i]}%; transition: width 0.8s cubic-bezier(0.4,0,0.2,1);"></div>
+          </div>
+          <input type="range" min="${reality[i]}" max="100" value="${reality[i]}" step="1"
+                 class="therm-input"
+                 data-panel="2" data-idx="${i}" id="sl-2-${i}">
+        </div>
+      `;
+      container.appendChild(row);
+    });
+  }
+  buildTab2();
+
+  // Custom wiring for Tab 2: total of (value - reality) must be <= 20
+  function wireTab2() {
+    const sliders = document.querySelectorAll('input[data-panel="2"]');
+    sliders.forEach(slider => {
+      slider.addEventListener('input', (e) => {
+        const idx = parseInt(e.target.dataset.idx);
+        // extra for this slider = value - reality[idx]
+        let myExtra = parseInt(e.target.value) - reality[idx];
+        const othersExtra = Array.from(sliders)
+          .filter(s => s !== e.target)
+          .reduce((sum, s) => sum + (parseInt(s.value) - reality[parseInt(s.dataset.idx)]), 0);
+        const maxExtraAllowed = 20 - othersExtra;
+        if (myExtra > maxExtraAllowed) {
+          myExtra = maxExtraAllowed;
+          e.target.value = reality[idx] + myExtra;
+        }
+        if (myExtra < 0) {
+          myExtra = 0;
+          e.target.value = reality[idx];
+        }
+        document.getElementById(`amt-2-${idx}`).textContent = `+€${myExtra}`;
+        updateTab2Total();
+      });
+    });
+  }
+  function updateTab2Total() {
+    const sliders = document.querySelectorAll('input[data-panel="2"]');
+    let totalExtra = 0;
+    sliders.forEach(s => totalExtra += (parseInt(s.value) - reality[parseInt(s.dataset.idx)]));
+    const bar = document.getElementById('total-2');
+    bar.textContent = `Extra: €${totalExtra} / €20`;
+    bar.classList.toggle('complete', totalExtra === 20);
+    document.getElementById('submit-2').disabled = (totalExtra !== 20);
+  }
+  wireTab2();
 
   // === Tab switching ===
   document.querySelectorAll('.tab').forEach(tab => {
@@ -350,189 +389,54 @@
     });
   });
 
-  // === Mock backend (localStorage) — Stap 3 vervangt door Supabase ===
-  function getMyAnswer(tab) {
-    const k = `kleding_my_${sessionCode}_t${tab}`;
-    return JSON.parse(localStorage.getItem(k) || 'null');
-  }
-  function saveMyAnswer(tab, data) {
-    localStorage.setItem(`kleding_my_${sessionCode}_t${tab}`, JSON.stringify(data));
-  }
+  // === Submit Tab 1: lock sliders, turn button into secret reveal ===
+  document.getElementById('submit-1').addEventListener('click', () => {
+    const sliders = document.querySelectorAll('input[data-panel="1"]');
+    sliders.forEach(s => s.disabled = true);
+    const btn = document.getElementById('submit-1');
+    btn.textContent = '✓ Verstuurd';
+    btn.classList.add('submitted');
+    btn.disabled = false; // stays clickable for hidden reveal
+    btn.dataset.revealed = '0';
+  });
 
-  // Mock group average — fake numbers slightly off from reality so leerlingen zien iets
-  function getGroupAverage(tab) {
-    if (tab === 1) {
-      return [18, 12, 15, 14, 28, 13]; // sums to 100, fake "groep"
-    } else {
-      return [3, 3, 6, 2, 2, 4]; // sums to 20, fake "groep extra"
+  // Hidden reveal on Tab 1: clicking ✓ Verstuurd button fills black to reality
+  document.getElementById('submit-1').addEventListener('click', (e) => {
+    const btn = e.currentTarget;
+    if (btn.classList.contains('submitted') && btn.dataset.revealed === '0') {
+      btn.dataset.revealed = '1';
+      categories.forEach((cat, i) => {
+        const fill = document.getElementById(`fill-1-${i}`);
+        fill.style.width = `${reality[i]}%`;
+      });
     }
-  }
+  });
 
-  // === Render comparison bars ===
-  function renderBars(panelNum, max) {
-    const container = document.getElementById(`bars-${panelNum}`);
-    container.innerHTML = '';
-    const mine = getMyAnswer(panelNum);
-    const group = getGroupAverage(panelNum);
-
-    categories.forEach((cat, i) => {
-      const myVal = mine ? mine[i] : 0;
-      const grpVal = group[i];
-      let html = `
-        <div class="bar-group">
-          <div class="bar-cat-name">${cat}</div>
-          <div class="bar-pair">
-            <div class="bar-row">
-              <span class="bar-label">mijn</span>
-              <div class="bar-track"><div class="bar-fill mine" style="width:${(myVal/max)*100}%"></div></div>
-              <span class="bar-value">€${myVal}</span>
-            </div>
-            <div class="bar-row">
-              <span class="bar-label">onze</span>
-              <div class="bar-track"><div class="bar-fill group" style="width:${(grpVal/max)*100}%"></div></div>
-              <span class="bar-value">€${grpVal}</span>
-            </div>
-          </div>
-        </div>
-      `;
-      container.innerHTML += html;
-    });
-  }
-
-  // === Render Tab 2 — 3-way comparison ===
-  function renderTab2() {
-    const container = document.getElementById('bars-2');
-    container.innerHTML = '';
-    const mine = getMyAnswer(1) || [0,0,0,0,0,0];
-    const group = getGroupAverage(1);
-    const max = 100;
-
-    categories.forEach((cat, i) => {
-      const html = `
-        <div class="bar-group">
-          <div class="bar-cat-name">${cat}</div>
-          <div class="bar-pair">
-            <div class="bar-row">
-              <span class="bar-label">mijn</span>
-              <div class="bar-track"><div class="bar-fill mine" style="width:${(mine[i]/max)*100}%"></div></div>
-              <span class="bar-value">€${mine[i]}</span>
-            </div>
-            <div class="bar-row">
-              <span class="bar-label">onze</span>
-              <div class="bar-track"><div class="bar-fill group" style="width:${(group[i]/max)*100}%"></div></div>
-              <span class="bar-value">€${group[i]}</span>
-            </div>
-            <div class="bar-row">
-              <span class="bar-label">echt</span>
-              <div class="bar-track"><div class="bar-fill real" style="width:${(reality[i]/max)*100}%"></div></div>
-              <span class="bar-value">€${reality[i]}</span>
-            </div>
-          </div>
-        </div>
-      `;
-      container.innerHTML += html;
-    });
-  }
-
-  // === Render Tab 3 comparison — werkelijkheid grijs + extra groen ===
-  function renderTab3() {
-    const container = document.getElementById('bars-3');
-    container.innerHTML = '';
-    const mineExtra = getMyAnswer(3);
-    const groupExtra = getGroupAverage(3);
-    const max = 60; // schaal voor visuele vergelijking (werkelijkheid kan 58 zijn)
-
-    categories.forEach((cat, i) => {
-      const myVal = mineExtra ? mineExtra[i] : 0;
-      const grpVal = groupExtra[i];
-      const html = `
-        <div class="bar-group">
-          <div class="bar-cat-name">${cat}</div>
-          <div class="bar-pair">
-            <div class="bar-row">
-              <span class="bar-label">echt</span>
-              <div class="bar-track"><div class="bar-fill real" style="width:${(reality[i]/max)*100}%"></div></div>
-              <span class="bar-value">€${reality[i]}</span>
-            </div>
-            <div class="bar-row">
-              <span class="bar-label">+mijn</span>
-              <div class="bar-track"><div class="bar-fill extra-mine" style="width:${(myVal/max)*100}%"></div></div>
-              <span class="bar-value">€${myVal}</span>
-            </div>
-            <div class="bar-row">
-              <span class="bar-label">+onze</span>
-              <div class="bar-track"><div class="bar-fill extra-group" style="width:${(grpVal/max)*100}%"></div></div>
-              <span class="bar-value">€${grpVal}</span>
-            </div>
-          </div>
-        </div>
-      `;
-      container.innerHTML += html;
-    });
-  }
-
-  // === Submit handlers ===
-  function submitTab(tab, max) {
-    const sliders = document.querySelectorAll(`input[data-panel="${tab}"]`);
-    const data = Array.from(sliders).map(s => parseInt(s.value));
-    saveMyAnswer(tab, data);
-    if (tab === 1) {
-      document.getElementById('compare-1').style.display = 'block';
-      renderBars(1, 100);
-      // disable sliders & button
-      sliders.forEach(s => s.disabled = true);
-      document.getElementById('submit-1').textContent = '✓ Verstuurd';
-      document.getElementById('submit-1').disabled = true;
-    } else if (tab === 3) {
-      document.getElementById('compare-3').style.display = 'block';
-      renderTab3();
-      sliders.forEach(s => s.disabled = true);
-      document.getElementById('submit-3').textContent = '✓ Verstuurd';
-      document.getElementById('submit-3').disabled = true;
+  // === Submit Tab 2: lock + secret reveal CCC extra ===
+  document.getElementById('submit-2').addEventListener('click', () => {
+    const sliders = document.querySelectorAll('input[data-panel="2"]');
+    sliders.forEach(s => s.disabled = true);
+    const btn = document.getElementById('submit-2');
+    btn.textContent = '✓ Verstuurd';
+    btn.classList.add('submitted');
+    btn.disabled = false;
+    btn.dataset.revealed = '0';
+  });
+  document.getElementById('submit-2').addEventListener('click', (e) => {
+    const btn = e.currentTarget;
+    if (btn.classList.contains('submitted') && btn.dataset.revealed === '0') {
+      btn.dataset.revealed = '1';
+      // Reveal CCC extra as light-green fill ON TOP of black reality
+      categories.forEach((cat, i) => {
+        const ccc = document.getElementById(`ccc-2-${i}`);
+        ccc.style.width = `${cccExtra[i]}%`;
+      });
     }
-  }
-  document.getElementById('submit-1').addEventListener('click', () => submitTab(1, 100));
-  document.getElementById('submit-3').addEventListener('click', () => submitTab(3, 20));
+  });
 
-  // Render Tab 2 when opened (always renders fresh)
-  document.querySelector('.tab[data-tab="2"]').addEventListener('click', renderTab2);
-
-  // Teacher unlock via URL
-  if (params.get('teacher') === '1' || params.get('unlock') === '2') {
+  // === Teacher unlock for testing ===
+  if (params.get('teacher') === '1') {
     document.querySelector('.tab[data-tab="2"]').classList.remove('locked');
-  }
-  if (params.get('teacher') === '1' || params.get('unlock') === '3') {
-    document.querySelector('.tab[data-tab="3"]').classList.remove('locked');
-  }
-
-  // Restore previous answers if leerling refresht
-  const prev1 = getMyAnswer(1);
-  if (prev1) {
-    prev1.forEach((v, i) => {
-      const sl = document.getElementById(`sl-1-${i}`);
-      sl.value = v;
-      sl.disabled = true;
-      document.getElementById(`amt-1-${i}`).textContent = `€${v}`;
-    });
-    updateTotal(1, 100);
-    document.getElementById('submit-1').textContent = '✓ Verstuurd';
-    document.getElementById('submit-1').disabled = true;
-    document.getElementById('compare-1').style.display = 'block';
-    renderBars(1, 100);
-  }
-  const prev3 = getMyAnswer(3);
-  if (prev3) {
-    prev3.forEach((v, i) => {
-      const sl = document.getElementById(`sl-3-${i}`);
-      sl.value = v;
-      sl.disabled = true;
-      document.getElementById(`amt-3-${i}`).textContent = `€${v}`;
-    });
-    updateTotal(3, 20);
-    document.getElementById('submit-3').textContent = '✓ Verstuurd';
-    document.getElementById('submit-3').disabled = true;
-    document.getElementById('compare-3').style.display = 'block';
-    renderTab3();
   }
 </script>
 
