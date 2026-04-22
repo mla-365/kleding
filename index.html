@@ -61,7 +61,7 @@
     margin-bottom: -2px;
   }
   .tab.active { color: #4A90E2; border-bottom-color: #4A90E2; }
-  .tab.locked { color: #ccc; cursor: not-allowed; }
+  .tab.locked { color: #fafafa; cursor: not-allowed; }
   .panel { display: none; }
   .panel.active { display: block; }
 
@@ -106,6 +106,20 @@
     transition: opacity 0.4s ease;
   }
   .amount-ccc.shown { opacity: 1; }
+  /* Tab 2 specific: amount in red, ccc in dark green */
+  #panel-2 .amount { color: #E74C3C; }
+  #panel-2 .amount-ccc { color: #1E8449; }
+  #panel-2 .total-bar.complete {
+    background: #E74C3C;
+    color: white;
+    border-color: #E74C3C;
+  }
+  #panel-2 .submit-btn {
+    background: #E74C3C;
+  }
+  #panel-2 .submit-btn:disabled { background: #ccc; }
+  #panel-2 .submit-btn.submitted { background: #999; }
+  #panel-2 .submit-btn:not(:disabled):not(.submitted):active { background: #C0392B; }
 
   /* === THERMOMETER SLIDER === */
   .therm-wrapper {
@@ -132,6 +146,20 @@
     transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
     border-radius: 3px;
   }
+  .reveal-thumb {
+    position: absolute;
+    top: 50%;
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    border: 2px solid #fff;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+    transform: translate(-50%, -50%);
+    z-index: 5;
+    opacity: 0;
+    transition: left 0.8s cubic-bezier(0.4,0,0.2,1), opacity 0.4s ease;
+    pointer-events: none;
+  }
+  .reveal-thumb.shown { opacity: 1; }
   /* Native range overlay — invisible track, only thumb visible */
   .therm-input {
     position: relative;
@@ -181,6 +209,41 @@
     background: #4A90E2;
     opacity: 0.85;
   }
+  /* Tab 2: red thumb is now a custom div - native thumb invisible */
+  .therm-input[data-panel="2"]::-webkit-slider-thumb {
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    width: 28px; height: 28px;
+  }
+  .therm-input[data-panel="2"]::-moz-range-thumb {
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    width: 28px; height: 28px;
+  }
+  .therm-input[data-panel="2"]:disabled::-webkit-slider-thumb {
+    background: transparent;
+  }
+  .therm-input[data-panel="2"]:disabled::-moz-range-thumb {
+    background: transparent;
+  }
+  /* Custom red thumb div for Tab 2 */
+  .red-thumb {
+    position: absolute;
+    top: 50%;
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    border: 2px solid #fff;
+    background: #E74C3C;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+    transform: translate(-50%, -50%);
+    z-index: 4;
+    opacity: 0;
+    transition: left 0.05s linear, opacity 0.2s ease;
+    pointer-events: none;
+  }
+  .red-thumb.shown { opacity: 1; }
 
   .total-bar {
     margin-top: 12px;
@@ -287,8 +350,10 @@
         </div>
         <div class="therm-wrapper">
           <div class="therm-track">
+            <div class="therm-fill value-fill" id="vfill-${panelNum}-${i}" style="width:0%; background:#4A90E2; opacity:0; transition: width 0.05s linear, opacity 0.3s ease;"></div>
             <div class="therm-fill" id="fill-${panelNum}-${i}"></div>
           </div>
+          <div class="reveal-thumb" id="rthumb-${panelNum}-${i}" style="background:#222; left:0%;"></div>
           <input type="range" min="0" max="${max}" value="0" step="1"
                  class="therm-input"
                  data-panel="${panelNum}" data-idx="${i}" id="sl-${panelNum}-${i}">
@@ -357,10 +422,13 @@
         <div class="therm-wrapper">
           <div class="therm-track">
             <div class="therm-fill" id="fill-2-${i}" style="width:${realityPct}%; background:#222;"></div>
-            <div class="therm-fill" id="ccc-2-${i}" style="width:0%; background:#A8E6BC; left:${realityPct}%; transition: width 0.8s cubic-bezier(0.4,0,0.2,1);"></div>
+            <div class="therm-fill value-fill" id="vfill-2-${i}" style="width:0%; background:#E74C3C; left:${realityPct}%; opacity:0; transition: width 0.05s linear, opacity 0.3s ease;"></div>
+            <div class="therm-fill" id="ccc-2-${i}" style="width:0%; background:#1E8449; left:${realityPct}%; transition: width 0.8s cubic-bezier(0.4,0,0.2,1);"></div>
           </div>
-          <input type="range" min="${reality[i]}" max="${VISUAL_MAX}" value="${reality[i]}" step="1"
-                 class="therm-input"
+          <div class="red-thumb" id="redthumb-2-${i}" style="left:${realityPct}%;"></div>
+          <div class="reveal-thumb" id="rthumb-2-${i}" style="background:#1E8449; left:${realityPct}%;"></div>
+          <input type="range" min="0" max="${VISUAL_MAX}" value="${reality[i]}" step="1"
+                 class="therm-input at-base"
                  data-panel="2" data-idx="${i}" id="sl-2-${i}">
         </div>
       `;
@@ -390,6 +458,13 @@
           e.target.value = reality[idx];
         }
         document.getElementById(`amt-2-${idx}`).textContent = `+€${myExtra}`;
+        // Update custom red thumb position based on actual value (relative to track 0-80)
+        const redThumb = document.getElementById(`redthumb-2-${idx}`);
+        const valuePct = (parseInt(e.target.value) / 80) * 100;
+        redThumb.style.left = `${valuePct}%`;
+        redThumb.classList.toggle('shown', myExtra > 0);
+        // Toggle at-base for any remaining native styling fallback
+        e.target.classList.toggle('at-base', myExtra === 0);
         updateTab2Total();
       });
     });
@@ -430,17 +505,28 @@
       // First click: lock and switch to "submitted" state
       const sliders = document.querySelectorAll('input[data-panel="1"]');
       sliders.forEach(s => s.disabled = true);
+      // Show blue value-fills under each blue thumb
+      sliders.forEach((s, i) => {
+        const vfill = document.getElementById(`vfill-1-${i}`);
+        vfill.style.width = `${(parseInt(s.value) / 80) * 100}%`;
+        vfill.style.opacity = '1';
+      });
       btn.textContent = '✓ Verstuurd';
       btn.classList.add('submitted');
       btn.dataset.stage = 'submitted';
     } else if (stage === 'submitted') {
-      // Second click: reveal the reality (black fill + black numbers + unlock Tab 2)
+      // Second click: reveal the reality (black fill + black numbers + black thumb + unlock Tab 2)
       categories.forEach((cat, i) => {
         const fill = document.getElementById(`fill-1-${i}`);
-        fill.style.width = `${(reality[i] / 80) * 100}%`;
+        const pct = (reality[i] / 80) * 100;
+        fill.style.width = `${pct}%`;
         const realLabel = document.getElementById(`real-1-${i}`);
         realLabel.textContent = `€${reality[i]}`;
         realLabel.classList.add('shown');
+        // Position and show the black reveal-thumb at end of black fill
+        const rthumb = document.getElementById(`rthumb-1-${i}`);
+        rthumb.style.left = `${pct}%`;
+        rthumb.classList.add('shown');
       });
       // Unlock Tab 2 automatically
       document.querySelector('.tab[data-tab="2"]').classList.remove('locked');
@@ -457,6 +543,14 @@
     if (stage === 'initial') {
       const sliders = document.querySelectorAll('input[data-panel="2"]');
       sliders.forEach(s => s.disabled = true);
+      // Show red value-fills from reality position to current value
+      sliders.forEach((s, i) => {
+        const myExtra = parseInt(s.value) - reality[i];
+        const widthPct = (myExtra / 80) * 100;
+        const vfill = document.getElementById(`vfill-2-${i}`);
+        vfill.style.width = `${widthPct}%`;
+        vfill.style.opacity = '1';
+      });
       btn.textContent = '✓ Verstuurd';
       btn.classList.add('submitted');
       btn.dataset.stage = 'submitted';
@@ -467,6 +561,13 @@
         const cccLabel = document.getElementById(`ccc-num-2-${i}`);
         cccLabel.textContent = `+€${cccExtra[i]}`;
         cccLabel.classList.add('shown');
+        // Position green reveal-thumb at end of black + green, ONLY if extra > 0
+        const rthumb = document.getElementById(`rthumb-2-${i}`);
+        if (cccExtra[i] > 0) {
+          const endPct = ((reality[i] + cccExtra[i]) / 80) * 100;
+          rthumb.style.left = `${endPct}%`;
+          rthumb.classList.add('shown');
+        }
       });
       btn.dataset.stage = 'revealed';
     }
